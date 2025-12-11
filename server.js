@@ -107,16 +107,16 @@ app.use((err, req, res, next) => {
 // START SERVER
 // ========================================
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log('========================================');
     console.log('🏠 AIONUS SERVER');
     console.log('========================================');
-    console.log(`✅ Server running at http://localhost:${PORT}`);
+    console.log(`✅ Server running on port ${PORT}`);
     console.log(`📡 API endpoints:`);
     console.log(`   POST /api/create-lead`);
     console.log(`   POST /api/upload-brochure`);
+    console.log(`   POST /telegram/webhook`);
     console.log(`   GET  /api/health`);
-    console.log(`📄 Admin: http://localhost:${PORT}/admin.html`);
     console.log('========================================');
 });
 

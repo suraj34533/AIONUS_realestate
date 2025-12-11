@@ -1,8 +1,11 @@
 {
-    "name": "AIONUS-website",
+    "name": "aionus-realestate",
     "version": "1.0.0",
     "description": "AIONUS Real Estate Website with Supabase Integration",
     "main": "server.js",
+    "engines": {
+        "node": ">=18.0.0"
+    },
     "scripts": {
         "start": "node server.js",
         "dev": "npx live-server --port=3000",
@@ -22,8 +25,13 @@
         "real-estate",
         "supabase",
         "AIONUS",
-        "express"
+        "express",
+        "telegram-bot"
     ],
-    "author": "",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/suraj34533/AIONUS_realestate.git"
+    },
+    "author": "AIONUS",
     "license": "ISC"
 }
