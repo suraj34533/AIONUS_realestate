@@ -5,7 +5,7 @@
 
 // Environment Configuration (reads from .env)
 // Initialize environment on load
-let GEMINI_API_KEY = 'AIzaSyAcGeo-oVdlVQcPjcpKaMhP3tUwtU5UOXY';
+let GEMINI_API_KEY = ''; // NEVER hardcode API keys - they get leaked on GitHub!
 const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 // Initialize environment variables
@@ -2077,32 +2077,32 @@ ${ragContext}
 - "Working professional ho Hyderabad mein? HITEC City to Gachibowli budget-friendly hai - ₹70L-1Cr mein premium apartments with all amenities! 💼"
 
 Be the SMARTEST, most KNOWLEDGEABLE India real estate advisor ever. NEVER mention Dubai or foreign properties.`
-        }]
-    };
+        };
 
-    try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: messages,
-                systemInstruction: systemInstruction,
-                generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
-            })
-        });
+        try {
+            // Use server-side API proxy to keep API key secure
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: messages,
+                    systemInstruction: systemInstruction,
+                    model: model
+                })
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Gemini API error:', errorData);
-            return `Sorry, API error: ${errorData.error?.message || 'Unknown error'}. Please check API key.`;
-        }
+            const data = await response.json();
 
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that. Please try again.";
+            if(!response.ok) {
+                console.error('Chat API error:', data);
+    return `Sorry, ${data.error || 'Unknown error'}. Please try again.`;
+}
+
+return data.text || "I couldn't process that. Please try again.";
     } catch (error) {
-        console.error('Chat error:', error);
-        return "An error occurred. Please check your connection.";
-    }
+    console.error('Chat error:', error);
+    return "An error occurred. Please check your connection.";
+}
 }
 
 

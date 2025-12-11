@@ -90,6 +90,45 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Secure Gemini Chat API Proxy (keeps API key on server, not exposed to frontend)
+app.post('/api/chat', async (req, res) => {
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+    if (!GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY not configured on server' });
+    }
+
+    try {
+        const { messages, systemInstruction, model = 'gemini-2.5-flash' } = req.body;
+
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: messages,
+                    systemInstruction: systemInstruction,
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Gemini API error:', data);
+            return res.status(response.status).json({ error: data.error?.message || 'API error' });
+        }
+
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that.";
+        res.json({ text });
+    } catch (error) {
+        console.error('Chat API error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ========================================
 // STATIC FILE HOSTING (Frontend)
 // ========================================
