@@ -2076,33 +2076,34 @@ ${ragContext}
 - "Delhi mein family ke liye? Greater Noida West recommend karungi - ₹60-80L mein 3BHK spacious, Noida Extension se zyada developed! 🏡"
 - "Working professional ho Hyderabad mein? HITEC City to Gachibowli budget-friendly hai - ₹70L-1Cr mein premium apartments with all amenities! 💼"
 
-Be the SMARTEST, most KNOWLEDGEABLE India real estate advisor ever. NEVER mention Dubai or foreign properties.`
-        };
+Be the SMARTEST, most KNOWLEDGEABLE India real estate advisor ever. NEVER mention Dubai or foreign properties.\`
+        }]
+    };
 
-        try {
-            // Use server-side API proxy to keep API key secure
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    messages: messages,
-                    systemInstruction: systemInstruction,
-                    model: model
-                })
-            });
+    try {
+        // Use server-side API proxy to keep API key secure
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: messages,
+                systemInstruction: systemInstruction,
+                model: model
+            })
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            if(!response.ok) {
-                console.error('Chat API error:', data);
-    return `Sorry, ${data.error || 'Unknown error'}. Please try again.`;
-}
+        if (!response.ok) {
+            console.error('Chat API error:', data);
+            return \`Sorry, \${data.error || 'Unknown error'}. Please try again.\`;
+        }
 
-return data.text || "I couldn't process that. Please try again.";
+        return data.text || "I couldn't process that. Please try again.";
     } catch (error) {
-    console.error('Chat error:', error);
-    return "An error occurred. Please check your connection.";
-}
+        console.error('Chat error:', error);
+        return "An error occurred. Please check your connection.";
+    }
 }
 
 
@@ -2129,10 +2130,10 @@ function renderProperties() {
         return true;
     });
 
-    countEl.textContent = `Showing ${filtered.length} Properties`;
+    countEl.textContent = `Showing ${ filtered.length } Properties`;
 
     grid.innerHTML = filtered.map(property => `
-        <div class="property-card" data-id="${property.id}">
+        < div class= "property-card" data - id="${property.id}" >
             <div class="property-image-container">
                 <img src="${property.image}" alt="${property.title}" loading="lazy">
                 <div class="property-badges">
@@ -2168,8 +2169,8 @@ function renderProperties() {
                     <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
                 </button>
             </div>
-        </div>
-    `).join('');
+        </div >
+        `).join('');
 
     // Click handlers
     document.querySelectorAll('.property-card').forEach(card => {
@@ -2254,7 +2255,7 @@ function openPropertyModal(propertyId) {
 
     const modalContent = document.getElementById('modalContent');
     modalContent.innerHTML = `
-        <div class="modal-hero">
+        < div class="modal-hero" >
             <img src="${property.image}" alt="${property.title}">
             <div class="modal-hero-overlay"></div>
             <div class="modal-hero-content">
