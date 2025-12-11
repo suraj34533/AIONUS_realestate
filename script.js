@@ -1912,10 +1912,10 @@ Current filters: ${JSON.stringify(currentFilters)}
         { role: 'user', parts: [{ text: userMessage }] }
     ];
 
-    // Fetch RAG context from uploaded brochures
+    // Fetch RAG context from uploaded brochures (use relative path for portability)
     let ragContext = '';
     try {
-        const ragResponse = await fetch(`http://localhost:4000/api/rag?query=${encodeURIComponent(userMessage)}`);
+        const ragResponse = await fetch(`/api/rag?query=${encodeURIComponent(userMessage)}`);
         if (ragResponse.ok) {
             const ragData = await ragResponse.json();
             ragContext = ragData.context || '';
@@ -2092,8 +2092,9 @@ Be the SMARTEST, most KNOWLEDGEABLE India real estate advisor ever. NEVER mentio
         });
 
         if (!response.ok) {
-            console.error('Gemini API error:', await response.json());
-            return "I'm having trouble connecting. Please check the API key configuration.";
+            const errorData = await response.json();
+            console.error('Gemini API error:', errorData);
+            return `Sorry, API error: ${errorData.error?.message || 'Unknown error'}. Please check API key.`;
         }
 
         const data = await response.json();
