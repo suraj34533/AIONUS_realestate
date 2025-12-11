@@ -2452,8 +2452,8 @@ function showNotification(message, type = 'success') {
     document.body.appendChild(notification);
 
     setTimeout(() => {
-        notification.style.animation = 'slideIn 0.3s ease reverse';
-        setTimeout(() => notification.remove(), 300);
+        notification.style.animation = 'slideIn 15s ease reverse';
+        setTimeout(() => notification.remove(), 15000);
     }, 4000);
 }
 
