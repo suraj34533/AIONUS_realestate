@@ -224,6 +224,8 @@ async function sendTelegramMessage(chatId, text, parseMode = 'HTML') {
         return false;
     }
 
+    console.log(`📤 Sending to Telegram [${chatId}]: ${text.substring(0, 50)}...`);
+
     try {
         const response = await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
             method: 'POST',
@@ -236,13 +238,16 @@ async function sendTelegramMessage(chatId, text, parseMode = 'HTML') {
         });
 
         const data = await response.json();
+
         if (!data.ok) {
-            console.error('❌ Telegram API error:', data);
+            console.error('❌ Telegram API error:', JSON.stringify(data));
             return false;
         }
+
+        console.log(`✅ Message sent successfully to ${chatId}`);
         return true;
     } catch (error) {
-        console.error('❌ sendTelegramMessage error:', error);
+        console.error('❌ sendTelegramMessage error:', error.message);
         return false;
     }
 }
@@ -616,15 +621,28 @@ Ab main property search mein help kar sakta hoon. Kya dhundh rahe ho?
 // ========================================
 
 router.post('/webhook', async (req, res) => {
-    // Always return 200 OK immediately
+    // CRITICAL: Always return 200 OK immediately to Telegram
     res.status(200).json({ ok: true });
+
+    console.log('🔔 WEBHOOK RECEIVED:', JSON.stringify(req.body).substring(0, 200));
 
     try {
         const update = req.body;
+
+        if (!update) {
+            console.log('❌ Empty update received');
+            return;
+        }
+
         const message = update.message;
 
-        if (!message || !message.text) {
-            console.log('⚠️ No text message in update');
+        if (!message) {
+            console.log('⚠️ No message in update - might be callback/edit');
+            return;
+        }
+
+        if (!message.text) {
+            console.log('⚠️ No text in message - might be media');
             return;
         }
 
@@ -632,7 +650,7 @@ router.post('/webhook', async (req, res) => {
         const text = message.text.trim();
         const userName = message.from?.first_name || 'User';
 
-        console.log(`📱 Telegram [${chatId}]: ${text.substring(0, 50)}...`);
+        console.log(`📱 [CHAT ${chatId}] From: ${userName} | Message: ${text}`);
 
         // ==========================================
         // STEP 1: Handle commands FIRST
@@ -650,11 +668,15 @@ router.post('/webhook', async (req, res) => {
 
                 const reply = `🙏 Namaste ${userName}! Welcome to AIONUS Real Estate.
 
-Main aapka AI property advisor hoon. Dubai ki best properties dhundhne mein aapki madad karunga! 🏠
+Main aapki AI property advisor hoon. India ki best properties dhundhne mein aapki madad karungi! 🏠
+
+Mumbai, Delhi, Bangalore, Hyderabad, Pune - kisi bhi city mein property chahiye toh batao!
 
 Shuru karte hain - aapka naam kya hai?`;
                 state.step = 1;
-                await sendTelegramMessage(chatId, reply);
+                console.log(`📤 Sending /start reply to ${chatId}`);
+                const sent = await sendTelegramMessage(chatId, reply);
+                console.log(`✅ /start reply sent: ${sent}`);
                 return;
             }
 
