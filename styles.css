@@ -369,7 +369,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    animation: heroZoomPan 25s ease-in-out infinite alternate;
+    animation: heroZoomPan 12s ease-in-out infinite alternate;
     transform-origin: center center;
 }
 
