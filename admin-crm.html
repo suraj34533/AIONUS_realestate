@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AIONUS Admin - CRM Lead Management">
+    <title>AIONUS Admin - CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* CRM Admin Page Styles */
+        .crm-container {
+            max-width: 1400px;
+            margin: 100px auto 60px;
+            padding: 0 24px;
+        }
+
+        .crm-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
+
+        .crm-header {
+            padding: 32px;
+            border-bottom: 1px solid #E5E5E5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .crm-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: #0D0D0D;
+            margin: 0;
+        }
+
+        .crm-header p {
+            color: #737373;
+            font-size: 0.95rem;
+            margin: 4px 0 0 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Controls Bar */
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 24px 32px;
+            background: #FAFAFA;
+            border-bottom: 1px solid #E5E5E5;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid #E5E5E5;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #C41E3A;
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 1px solid #E5E5E5;
+            background: white;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-btn:hover {
+            border-color: #C41E3A;
+            color: #C41E3A;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #C41E3A 0%, #E31B54 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .action-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+            color: white;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .dark-mode-toggle {
+            background: #333;
+            color: white;
+        }
+
+        .dark-mode-toggle:hover {
+            background: #555;
+        }
+
+        /* Table Styles */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .crm-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .crm-table thead {
+            background: #F8F8F8;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .crm-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #737373;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #E5E5E5;
+            cursor: pointer;
+            transition: color 0.2s;
+            white-space: nowrap;
+        }
+
+        .crm-table th:hover {
+            color: #C41E3A;
+        }
+
+        .crm-table th.sortable::after {
+            content: " ↕";
+            opacity: 0.4;
+        }
+
+        .crm-table th.sort-asc::after {
+            content: " ↑";
+            opacity: 1;
+            color: #C41E3A;
+        }
+
+        .crm-table th.sort-desc::after {
+            content: " ↓";
+            opacity: 1;
+            color: #C41E3A;
+        }
+
+        .crm-table tbody tr {
+            border-bottom: 1px solid #F0F0F0;
+            transition: background 0.2s;
+        }
+
+        .crm-table tbody tr:nth-child(even) {
+            background: #FAFAFA;
+        }
+
+        .crm-table tbody tr:hover {
+            background: #FEF2F2;
+        }
+
+        .crm-table td {
+            padding: 16px 20px;
+            font-size: 0.95rem;
+            color: #262626;
+        }
+
+        .crm-table td .phone {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .crm-table td .budget {
+            font-weight: 600;
+            color: #C41E3A;
+        }
+
+        .crm-table td .lead-source {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #F0F0F0;
+            color: #525252;
+        }
+
+        .crm-table td .date {
+            font-size: 0.85rem;
+            color: #737373;
+        }
+
+        /* Stage Badge Styles */
+        .stage-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            display: inline-block;
+        }
+
+        .stage-new {
+            background: #E5E5E5;
+            color: #525252;
+        }
+
+        .stage-contacted {
+            background: #DBEAFE;
+            color: #1D4ED8;
+        }
+
+        .stage-interested {
+            background: #EDE9FE;
+            color: #7C3AED;
+        }
+
+        .stage-hot {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .stage-closed {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        /* Stage Dropdown */
+        .stage-select {
+            padding: 8px 12px;
+            border: 1px solid #E5E5E5;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            background: white;
+            min-width: 130px;
+        }
+
+        .stage-select:focus {
+            outline: none;
+            border-color: #C41E3A;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 24px;
+            color: #737373;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: #737373;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E5E5E5;
+            border-top-color: #C41E3A;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Pagination */
+        .pagination-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            border-top: 1px solid #E5E5E5;
+            background: #FAFAFA;
+        }
+
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #737373;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid #E5E5E5;
+            background: white;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: #C41E3A;
+            color: #C41E3A;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-btn.active {
+            background: #C41E3A;
+            color: white;
+            border-color: #C41E3A;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            padding: 16px 32px;
+            background: #FEF2F2;
+            border-top: 1px solid #E5E5E5;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .stat-item strong {
+            color: #C41E3A;
+        }
+
+        /* Admin Navigation */
+        .admin-nav {
+            display: flex;
+            gap: 16px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .admin-nav a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .admin-nav a:hover,
+        .admin-nav a.active {
+            background: rgba(255, 215, 0, 0.15);
+            color: #ffd700;
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #737373;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #C41E3A;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .crm-container {
+                margin-top: 80px;
+                padding: 0 16px;
+            }
+
+            .controls-bar {
+                flex-direction: column;
+                padding: 16px;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .filter-group {
+                flex-wrap: wrap;
+            }
+
+            .crm-table th,
+            .crm-table td {
+                padding: 12px;
+                font-size: 0.85rem;
+            }
+
+            .crm-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .crm-card {
+            background: #16213e;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .crm-header {
+            border-bottom-color: #2d3748;
+        }
+
+        body.dark-mode .crm-header h1 {
+            color: #ffd700;
+        }
+
+        body.dark-mode .crm-header p {
+            color: #a0aec0;
+        }
+
+        body.dark-mode .controls-bar {
+            background: #1e2a4a;
+            border-bottom-color: #2d3748;
+        }
+
+        body.dark-mode .search-box input {
+            background: #16213e;
+            border-color: #2d3748;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .search-box input:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+        }
+
+        body.dark-mode .filter-btn {
+            background: #16213e;
+            border-color: #2d3748;
+            color: #a0aec0;
+        }
+
+        body.dark-mode .filter-btn:hover {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        body.dark-mode .filter-btn.active {
+            background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+            color: #000;
+        }
+
+        body.dark-mode .crm-table thead {
+            background: #1e2a4a;
+        }
+
+        body.dark-mode .crm-table th {
+            color: #a0aec0;
+            border-bottom-color: #2d3748;
+        }
+
+        body.dark-mode .crm-table th:hover {
+            color: #ffd700;
+        }
+
+        body.dark-mode .crm-table tbody tr {
+            border-bottom-color: #2d3748;
+        }
+
+        body.dark-mode .crm-table tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        body.dark-mode .crm-table tbody tr:hover {
+            background: rgba(255, 215, 0, 0.08);
+        }
+
+        body.dark-mode .crm-table td {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .stage-select {
+            background: #1e2a4a;
+            border-color: #2d3748;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .pagination-bar,
+        body.dark-mode .stats-bar {
+            background: #1e2a4a;
+            border-top-color: #2d3748;
+        }
+
+        body.dark-mode .page-btn {
+            background: #16213e;
+            border-color: #2d3748;
+            color: #a0aec0;
+        }
+
+        body.dark-mode .page-btn:hover:not(:disabled) {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        body.dark-mode .page-btn.active {
+            background: #ffd700;
+            color: #000;
+        }
+
+        body.dark-mode .stat-item strong {
+            color: #ffd700;
+        }
+
+        body.dark-mode .back-link {
+            color: #a0aec0;
+        }
+
+        body.dark-mode .back-link:hover {
+            color: #ffd700;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background: #ffd700;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Admin Navigation -->
+    <nav class="admin-nav">
+        <a href="/">🏠 Home</a>
+        <a href="/admin.html">📄 Upload Brochures</a>
+        <a href="/admin-visits.html">📅 Site Visits</a>
+        <a href="/admin-crm.html" class="active">👥 CRM Leads</a>
+        <a href="/admin-analytics.html">📊 Analytics</a>
+    </nav>
+
+    <div class="crm-container">
+        <a href="/" class="back-link">← Back to Website</a>
+
+        <div class="crm-card">
+            <div class="crm-header">
+                <div>
+                    <h1>👥 CRM Lead Management</h1>
+                    <p>Track and manage all your leads in one place</p>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn export-btn" onclick="exportToCSV()">
+                        📥 Export CSV
+                    </button>
+                    <button class="action-btn dark-mode-toggle" onclick="toggleDarkMode()">
+                        🌙 Dark Mode
+                    </button>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-bar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name or phone...">
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn active" data-stage="all">All</button>
+                    <button class="filter-btn" data-stage="new">🆕 New</button>
+                    <button class="filter-btn" data-stage="contacted">📞 Contacted</button>
+                    <button class="filter-btn" data-stage="interested">⭐ Interested</button>
+                    <button class="filter-btn" data-stage="hot">🔥 Hot</button>
+                    <button class="filter-btn" data-stage="closed">✅ Closed</button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrapper">
+                <div id="tableContent">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p>Loading leads...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-bar">
+                <div class="pagination-info">
+                    Showing <strong id="showingStart">0</strong> - <strong id="showingEnd">0</strong> of <strong
+                        id="totalCount">0</strong> leads
+                </div>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevBtn" onclick="prevPage()" disabled>← Previous</button>
+                    <span id="pageNumbers"></span>
+                    <button class="page-btn" id="nextBtn" onclick="nextPage()">Next →</button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span>Total:</span>
+                    <strong id="statTotal">0</strong>
+                </div>
+                <div class="stat-item">
+                    <span>New:</span>
+                    <strong id="statNew">0</strong>
+                </div>
+                <div class="stat-item">
+                    <span>Hot:</span>
+                    <strong id="statHot">0</strong>
+                </div>
+                <div class="stat-item">
+                    <span>Closed:</span>
+                    <strong id="statClosed">0</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // CRM ADMIN DASHBOARD
+        // ========================================
+
+        let allLeads = [];
+        let filteredLeads = [];
+        let currentStage = 'all';
+        let currentSort = { field: 'created_at', direction: 'desc' };
+        let currentPage = 1;
+        const pageSize = 10;
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load dark mode preference
+            if (localStorage.getItem('adminDarkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                updateDarkModeButton();
+            }
+            await loadLeads();
+            setupEventListeners();
+        });
+
+        // Load leads from API
+        async function loadLeads() {
+            try {
+                const response = await fetch('/api/crm/get-leads');
+                const data = await response.json();
+
+                if (data.success) {
+                    allLeads = data.leads;
+                } else {
+                    console.warn('Failed to load leads, using demo data');
+                    allLeads = getDemoData();
+                }
+
+                applyFilters();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading leads:', error);
+                allLeads = getDemoData();
+                applyFilters();
+                updateStats();
+            }
+        }
+
+        // Demo data for testing
+        function getDemoData() {
+            return [
+                { id: '1', name: 'Ahmed Khan', phone: '+971 50 123 4567', budget: '2M - 5M AED', lead_source: 'chatbot', stage: 'new', created_at: new Date().toISOString() },
+                { id: '2', name: 'Sarah Johnson', phone: '+971 55 987 6543', budget: '1M - 2M AED', lead_source: 'website', stage: 'contacted', created_at: new Date(Date.now() - 86400000).toISOString() },
+                { id: '3', name: 'Mohammed Ali', phone: '+971 52 456 7890', budget: '5M+ AED', lead_source: 'chatbot', stage: 'hot', created_at: new Date(Date.now() - 172800000).toISOString() },
+                { id: '4', name: 'Priya Sharma', phone: '+91 98765 43210', budget: '50L - 1Cr', lead_source: 'referral', stage: 'interested', created_at: new Date(Date.now() - 259200000).toISOString() },
+                { id: '5', name: 'John Smith', phone: '+1 555 123 4567', budget: '500K - 1M USD', lead_source: 'chatbot', stage: 'closed', created_at: new Date(Date.now() - 345600000).toISOString() },
+            ];
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search with debounce
+            document.getElementById('searchInput').addEventListener('input', debounce(() => {
+                currentPage = 1;
+                applyFilters();
+            }, 300));
+
+            // Stage filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentStage = btn.dataset.stage;
+                    currentPage = 1;
+                    applyFilters();
+                });
+            });
+        }
+
+        // Apply filters and search
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            filteredLeads = allLeads.filter(lead => {
+                // Search filter
+                const matchesSearch = !searchTerm ||
+                    lead.name?.toLowerCase().includes(searchTerm) ||
+                    lead.phone?.toLowerCase().includes(searchTerm);
+
+                // Stage filter
+                const matchesStage = currentStage === 'all' || lead.stage === currentStage;
+
+                return matchesSearch && matchesStage;
+            });
+
+            // Apply sorting
+            sortLeads();
+            renderTable();
+        }
+
+        // Sort leads
+        function sortLeads() {
+            filteredLeads.sort((a, b) => {
+                let aVal = a[currentSort.field] || '';
+                let bVal = b[currentSort.field] || '';
+
+                if (currentSort.direction === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+        }
+
+        // Handle column sort
+        function handleSort(field) {
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+            applyFilters();
+        }
+
+        // Render table with pagination
+        function renderTable() {
+            const container = document.getElementById('tableContent');
+
+            if (filteredLeads.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <h3>No Leads Found</h3>
+                        <p>No leads match your current filters.</p>
+                    </div>
+                `;
+                updatePagination(0, 0, 0);
+                return;
+            }
+
+            // Calculate pagination
+            const totalItems = filteredLeads.length;
+            const totalPages = Math.ceil(totalItems / pageSize);
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, totalItems);
+            const pageData = filteredLeads.slice(startIndex, endIndex);
+
+            const getSortClass = (field) => {
+                if (currentSort.field !== field) return 'sortable';
+                return `sortable sort-${currentSort.direction}`;
+            };
+
+            let html = `
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <th class="${getSortClass('name')}" onclick="handleSort('name')">Name</th>
+                            <th class="${getSortClass('phone')}" onclick="handleSort('phone')">Phone</th>
+                            <th class="${getSortClass('budget')}" onclick="handleSort('budget')">Budget</th>
+                            <th class="${getSortClass('lead_source')}" onclick="handleSort('lead_source')">Source</th>
+                            <th class="${getSortClass('stage')}" onclick="handleSort('stage')">Stage</th>
+                            <th class="${getSortClass('created_at')}" onclick="handleSort('created_at')">Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            pageData.forEach(lead => {
+                const formattedDate = formatDate(lead.created_at);
+                const stageClass = `stage-${lead.stage}`;
+
+                html += `
+                    <tr>
+                        <td><strong>${escapeHtml(lead.name)}</strong></td>
+                        <td><span class="phone">${escapeHtml(lead.phone)}</span></td>
+                        <td><span class="budget">${escapeHtml(lead.budget || '-')}</span></td>
+                        <td><span class="lead-source">${escapeHtml(lead.lead_source || 'chatbot')}</span></td>
+                        <td>
+                            <select class="stage-select" onchange="updateStage('${lead.id}', this.value)">
+                                <option value="new" ${lead.stage === 'new' ? 'selected' : ''}>🆕 New</option>
+                                <option value="contacted" ${lead.stage === 'contacted' ? 'selected' : ''}>📞 Contacted</option>
+                                <option value="interested" ${lead.stage === 'interested' ? 'selected' : ''}>⭐ Interested</option>
+                                <option value="hot" ${lead.stage === 'hot' ? 'selected' : ''}>🔥 Hot</option>
+                                <option value="closed" ${lead.stage === 'closed' ? 'selected' : ''}>✅ Closed</option>
+                            </select>
+                        </td>
+                        <td><span class="date">${formattedDate}</span></td>
+                        <td>
+                            <a href="tel:${lead.phone}" style="color: #059669; text-decoration: none;">📞 Call</a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+
+            // Update pagination UI
+            updatePagination(startIndex + 1, endIndex, totalItems);
+            updatePaginationButtons(totalPages);
+        }
+
+        // Update stage via API
+        async function updateStage(leadId, newStage) {
+            try {
+                const response = await fetch('/api/crm/update-stage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: leadId, new_stage: newStage })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('✅ Stage updated:', leadId, '→', newStage);
+                    // Update local data
+                    const lead = allLeads.find(l => l.id === leadId);
+                    if (lead) lead.stage = newStage;
+                    updateStats();
+                } else {
+                    alert('Failed to update stage: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error updating stage:', error);
+                alert('Failed to update stage');
+            }
+        }
+
+        // Update pagination info display
+        function updatePagination(start, end, total) {
+            document.getElementById('showingStart').textContent = start || 0;
+            document.getElementById('showingEnd').textContent = end || 0;
+            document.getElementById('totalCount').textContent = total || 0;
+        }
+
+        // Update pagination buttons
+        function updatePaginationButtons(totalPages) {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const pageNumbers = document.getElementById('pageNumbers');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+
+            // Generate page numbers
+            let numbersHtml = '';
+            for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                const pageNum = totalPages <= 5 ? i :
+                    currentPage <= 3 ? i :
+                        currentPage >= totalPages - 2 ? totalPages - 5 + i :
+                            currentPage - 3 + i;
+                if (pageNum > 0 && pageNum <= totalPages) {
+                    numbersHtml += `<button class="page-btn ${pageNum === currentPage ? 'active' : ''}" onclick="goToPage(${pageNum})">${pageNum}</button>`;
+                }
+            }
+            pageNumbers.innerHTML = numbersHtml;
+        }
+
+        // Pagination navigation
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredLeads.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('statTotal').textContent = allLeads.length;
+            document.getElementById('statNew').textContent = allLeads.filter(l => l.stage === 'new').length;
+            document.getElementById('statHot').textContent = allLeads.filter(l => l.stage === 'hot').length;
+            document.getElementById('statClosed').textContent = allLeads.filter(l => l.stage === 'closed').length;
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (filteredLeads.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const headers = ['Name', 'Phone', 'Budget', 'Source', 'Stage', 'Created At'];
+            const rows = filteredLeads.map(l => [
+                l.name,
+                l.phone,
+                l.budget || '',
+                l.lead_source || 'chatbot',
+                l.stage,
+                l.created_at
+            ]);
+
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(cell => `"${(cell || '').replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `crm-leads-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('adminDarkMode', isDark);
+            updateDarkModeButton();
+        }
+
+        function updateDarkModeButton() {
+            const btn = document.querySelector('.dark-mode-toggle');
+            if (!btn) return;
+            const isDark = document.body.classList.contains('dark-mode');
+            btn.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        // Utility functions
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+    </script>
+</body>
+
+</html>

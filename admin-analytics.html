@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AIONUS Admin - Analytics Dashboard">
+    <title>AIONUS Analytics</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Analytics Styles -->
+    <link rel="stylesheet" href="analytics.css">
+</head>
+
+<body class="analytics-page">
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h1>AIONUS</h1>
+                <span>Analytics Dashboard</span>
+            </div>
+
+            <p class="sidebar-section-title">Navigation</p>
+            <ul class="sidebar-nav">
+                <li><a href="/"><span class="nav-icon">🏠</span> Home</a></li>
+                <li><a href="/admin.html"><span class="nav-icon">📄</span> Brochures</a></li>
+                <li><a href="/admin-visits.html"><span class="nav-icon">📅</span> Site Visits</a></li>
+                <li><a href="/admin-crm.html"><span class="nav-icon">👥</span> CRM Leads</a></li>
+                <li><a href="/admin-analytics.html" class="active"><span class="nav-icon">📊</span> Analytics</a></li>
+            </ul>
+
+            <p class="sidebar-section-title">Quick Stats</p>
+            <ul class="sidebar-nav">
+                <li><a href="#"><span class="nav-icon">📈</span> Performance</a></li>
+                <li><a href="#"><span class="nav-icon">💰</span> Revenue</a></li>
+                <li><a href="#"><span class="nav-icon">🎯</span> Goals</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h2>📊 Analytics Overview</h2>
+                    <p>Real-time insights • Last updated: <span id="lastUpdated">Just now</span></p>
+                </div>
+                <div class="header-right">
+                    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleDarkMode()">
+                        <span class="icon">☀️</span> Light Mode
+                    </button>
+                </div>
+            </header>
+
+            <!-- Hero Stats -->
+            <section class="hero-stats">
+                <div class="hero-card hero-card-main">
+                    <span class="hero-label">Total Leads Value</span>
+                    <div class="hero-value" id="heroValue">$0</div>
+                    <div class="hero-bar-chart">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                </div>
+                <div class="hero-card hero-card-side">
+                    <span class="side-label">Hot Leads Value</span>
+                    <div class="side-value" id="sideValue">$0</div>
+                    <ul class="side-list">
+                        <li>
+                            <span class="label">Today's Leads</span>
+                            <span class="value" id="todayLeadsCount">0</span>
+                        </li>
+                        <li>
+                            <span class="label">Conversion Rate</span>
+                            <span class="value" id="conversionRateValue">0%</span>
+                        </li>
+                        <li>
+                            <span class="label">Avg Response Time</span>
+                            <span class="value">2.4 hrs</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Stats Cards -->
+            <section class="stats-row">
+                <div class="stat-card purple">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="totalLeads">0</div>
+                    <div class="stat-label">Total Leads</div>
+                    <div class="stat-trend">📈 +12% this week</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-value" id="totalVisits">0</div>
+                    <div class="stat-label">Site Visits</div>
+                    <div class="stat-trend">📈 +8% this week</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value" id="hotLeads">0</div>
+                    <div class="stat-label">Hot Leads</div>
+                    <div class="stat-trend">🎯 Ready to close</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="closedLeads">0</div>
+                    <div class="stat-label">Closed Deals</div>
+                    <div class="stat-trend">💰 This month</div>
+                </div>
+            </section>
+
+            <!-- Charts Grid -->
+            <section class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">📈 Leads Per Day</h3>
+                        <div class="chart-tabs">
+                            <button class="chart-tab active">7 Days</button>
+                            <button class="chart-tab">30 Days</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="leadsChart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot green"></span>
+                            <span>Leads</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot purple"></span>
+                            <span>Conversions</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card donut-center">
+                    <div class="chart-header">
+                        <h3 class="chart-title">🎯 Lead Sources</h3>
+                    </div>
+                    <div class="donut-container">
+                        <canvas id="sourceChart"></canvas>
+                    </div>
+                    <div class="donut-stats">
+                        <div class="donut-stat">
+                            <div class="donut-stat-left">
+                                <span class="donut-stat-dot" style="background: #9945ff;"></span>
+                                <span class="donut-stat-label">Chatbot</span>
+                            </div>
+                            <span class="donut-stat-value" id="chatbotCount">0</span>
+                        </div>
+                        <div class="donut-stat">
+                            <div class="donut-stat-left">
+                                <span class="donut-stat-dot" style="background: #00d984;"></span>
+                                <span class="donut-stat-label">Website</span>
+                            </div>
+                            <span class="donut-stat-value" id="websiteCount">0</span>
+                        </div>
+                        <div class="donut-stat">
+                            <div class="donut-stat-left">
+                                <span class="donut-stat-dot" style="background: #4f7df3;"></span>
+                                <span class="donut-stat-label">Referral</span>
+                            </div>
+                            <span class="donut-stat-value" id="referralCount">0</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Second Charts Row -->
+            <section class="charts-grid" style="margin-bottom: 32px;">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">📊 Site Visits Trend</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="visitsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">🔄 Lead Stages</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="stagesChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tables Section -->
+            <section class="table-section">
+                <div class="table-card">
+                    <div class="table-header">
+                        <div class="table-title-group">
+                            <div class="table-icon">🆕</div>
+                            <h3 class="table-title">Recent Leads</h3>
+                        </div>
+                        <a href="/admin-crm.html" class="view-all-btn">View All →</a>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Stage</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentLeadsBody">
+                            <tr>
+                                <td colspan="4">
+                                    <div class="loading-state">
+                                        <div class="loading-spinner"></div>
+                                        <span>Loading...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <div class="table-title-group">
+                            <div class="table-icon">📅</div>
+                            <h3 class="table-title">Upcoming Visits</h3>
+                        </div>
+                        <a href="/admin-visits.html" class="view-all-btn">View All →</a>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="upcomingVisitsBody">
+                            <tr>
+                                <td colspan="4">
+                                    <div class="loading-state">
+                                        <div class="loading-spinner"></div>
+                                        <span>Loading...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Analytics JavaScript -->
+    <script src="analytics.js"></script>
+</body>
+
+</html>

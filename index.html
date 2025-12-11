@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="AIONUS - Premium off-plan & ready-to-move properties with concierge-level service">
+    <title>AIONUS - Premium Real Estate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- AI Chat Panel -->
+    <div class="panel-overlay" id="chatOverlay"></div>
+    <div class="panel chat-panel" id="chatPanel">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <div class="chat-avatar">
+                    <svg viewBox="0 0 24 24" width="28" height="28">
+                        <path fill="currentColor"
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                    </svg>
+                </div>
+                <div>
+                    <h4>Property Assistant</h4>
+                    <span class="online-status">● Online</span>
+                </div>
+            </div>
+            <div class="chat-header-controls">
+                <!-- New Chat Button -->
+                <button class="new-chat-btn" id="newChatBtn" title="Start New Chat">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                    </svg>
+                </button>
+                <!-- Voice Gender Selector -->
+                <select id="voiceGenderSelect" class="voice-gender-select" title="Voice Gender">
+                    <option value="female" selected>👩 Female</option>
+                    <option value="male">👨 Male</option>
+                </select>
+                <!-- Voice Toggle -->
+                <button class="voice-toggle-btn" id="voiceToggle" title="Toggle Voice Output">
+                    <svg class="voice-on-icon" viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="currentColor"
+                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <svg class="voice-off-icon" viewBox="0 0 24 24" width="20" height="20" style="display:none;">
+                        <path fill="currentColor"
+                            d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                    </svg>
+                </button>
+                <button class="panel-close" id="chatClose">&times;</button>
+            </div>
+        </div>
+        <div class="chat-quick-actions">
+            <button class="quick-action-btn" data-question="What properties are available?">🏠 Available
+                Properties</button>
+            <button class="quick-action-btn" data-question="Show me off-plan options">📋 Off Plan</button>
+            <button class="quick-action-btn" data-question="What's the best area to invest?">📍 Best Areas</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-bubble">
+                    🙏 Namaste! Main aapki AIONUS property advisor hoon. Aapke liye perfect ghar dhundne mein madad
+                    karungi. Pehle, aapka shubh naam bataiye? 😊
+                </div>
+                <button class="speak-btn" title="Listen to this message">🔊</button>
+            </div>
+        </div>
+        <div class="chat-input-wrapper">
+            <!-- Microphone Button -->
+            <button id="voiceMicBtn" class="voice-mic-btn" title="Click to speak">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor"
+                        d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />
+                </svg>
+                <span class="mic-waves"></span>
+            </button>
+            <input type="text" id="chatInput" placeholder="Type or speak your question..." class="chat-input">
+            <button id="chatSend" class="chat-send-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Buttons -->
+    <div class="floating-buttons">
+        <a href="https://t.me/Agent182726_bot" target="_blank" class="floating-btn telegram-btn"
+            title="Chat on Telegram">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                    d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+            </svg>
+        </a>
+        <button class="floating-btn chat-btn" id="floatingChat">
+            <span class="chat-icon">💬</span>
+        </button>
+    </div>
+
+    <!-- Property Modal -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="property-modal" id="propertyModal">
+        <button class="modal-close" id="modalClose">&times;</button>
+        <div class="modal-content" id="modalContent"></div>
+    </div>
+
+    <!-- Full-Screen Login/Register Page -->
+    <div class="auth-page" id="authPage">
+        <button class="auth-close-btn" id="authCloseBtn">&times;</button>
+
+        <!-- Auth Container -->
+        <div class="auth-container">
+            <!-- Left Side - Branding -->
+            <div class="auth-branding">
+                <div class="auth-branding-content">
+                    <h1 class="auth-logo">AIONUS</h1>
+                    <p class="auth-tagline">Premium Real Estate Platform</p>
+                    <div class="auth-features">
+                        <div class="auth-feature">✅ Save your property preferences</div>
+                        <div class="auth-feature">✅ Track your favorite listings</div>
+                        <div class="auth-feature">✅ Get personalized recommendations</div>
+                        <div class="auth-feature">✅ Schedule site visits easily</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Forms -->
+            <div class="auth-forms-wrapper">
+                <!-- Tabs -->
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="loginTab" data-tab="login">Login</button>
+                    <button class="auth-tab" id="registerTab" data-tab="register">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form-panel active">
+                    <h2>Welcome Back</h2>
+                    <p class="auth-subtitle">Login to continue your property search</p>
+                    <form id="loginFormElement">
+                        <div class="form-group">
+                            <label for="loginEmail">Email Address</label>
+                            <input type="email" id="loginEmail" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                        </div>
+                        <div id="loginError" class="auth-error"></div>
+                        <button type="submit" class="auth-submit-btn" id="loginBtn">
+                            <span id="loginBtnText">Login</span>
+                            <span id="loginSpinner" class="spinner hidden"></span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerForm" class="auth-form-panel">
+                    <h2>Create Account</h2>
+                    <p class="auth-subtitle">Register to save your preferences</p>
+                    <form id="registerFormElement">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="registerName">Full Name</label>
+                                <input type="text" id="registerName" placeholder="Your name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="registerPhone">Phone</label>
+                                <input type="tel" id="registerPhone" placeholder="+91 98765 43210">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email Address</label>
+                            <input type="email" id="registerEmail" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" placeholder="Min 6 characters" minlength="6"
+                                required>
+                        </div>
+                        <div id="registerError" class="auth-error"></div>
+                        <button type="submit" class="auth-submit-btn" id="registerBtn">
+                            <span id="registerBtnText">Create Account</span>
+                            <span id="registerSpinner" class="spinner hidden"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo" onclick="scrollToTop()">
+                <span class="logo-elite">AIONUS</span>
+            </a>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Menu">
+                <span class="hamburger-icon">☰</span>
+            </button>
+
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#company" class="nav-link">Company</a></li>
+                <li class="nav-dropdown">
+                    <a href="#properties" class="nav-link">Buy <svg class="dropdown-icon" viewBox="0 0 24 24" width="12"
+                            height="12">
+                            <path fill="currentColor" d="M7 10l5 5 5-5z" />
+                        </svg></a>
+                    <div class="dropdown-content">
+                        <a href="#" data-filter="apartment">Apartments</a>
+                        <a href="#" data-filter="villa">Villas</a>
+                        <a href="#" data-filter="townhouse">Townhouses</a>
+                        <a href="#" data-filter="penthouse">Penthouses</a>
+                        <a href="#" data-filter="office">Offices</a>
+                    </div>
+                </li>
+                <li><a href="#sell" class="nav-link">Sell</a></li>
+                <li><a href="#properties" class="nav-link" data-filter="offplan">Off Plan</a></li>
+                <li><a href="#properties" class="nav-link">Locations</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <!-- User Auth Display -->
+                <div class="user-auth-display" id="userAuthDisplay">
+                    <!-- Shows when logged in -->
+                    <div class="user-logged-in hidden" id="userLoggedIn">
+                        <span class="user-name" id="navUserName">👤 Guest</span>
+                        <button class="nav-btn-outline logout-btn" id="navLogoutBtn">Logout</button>
+                    </div>
+                    <!-- Shows when logged out -->
+                    <button class="nav-btn-outline login-btn" id="navLoginBtn">🔐 Login</button>
+                </div>
+
+                <div class="nav-dropdown">
+                    <a href="/admin.html" class="nav-btn-outline" title="Admin Panel">⚙️ Admin <svg
+                            class="dropdown-icon" viewBox="0 0 24 24" width="12" height="12">
+                            <path fill="currentColor" d="M7 10l5 5 5-5z" />
+                        </svg></a>
+                    <div class="dropdown-content">
+                        <a href="/admin.html">📄 Upload Brochures</a>
+                        <a href="/admin-visits.html">📅 Site Visits</a>
+                        <a href="/admin-crm.html">👥 CRM Leads</a>
+                        <a href="/admin-analytics.html">📊 Analytics</a>
+                    </div>
+                </div>
+                <a href="#blog" class="nav-btn-outline">Blog</a>
+                <a href="#contact" class="nav-btn-primary">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor"
+                            d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                    </svg>
+                    Get in Touch
+                </a>
+            </div>
+
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-bg">
+            <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=80" alt="Luxury Villa"
+                class="hero-img">
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <span class="hero-tag">LUXURY REDEFINED</span>
+            <h1 class="hero-title">
+                Premium Homes <span class="ampersand">&amp;</span><br>
+                Villas<br>
+                <span class="by-line">by <span class="brand-highlight">AIONUS</span></span>
+            </h1>
+            <p class="hero-subtitle">Off-plan & ready-to-move properties with concierge-level service. Experience the
+                pinnacle of real estate excellence.</p>
+            <div class="hero-ctas">
+                <a href="#properties" class="btn btn-primary">
+                    Explore Properties
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                    </svg>
+                </a>
+                <button class="btn btn-dark" id="heroChat">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor"
+                            d="M21 6h-2V3H3v11h2v3l3-3h6v-2H5V5h12v3h4v7h-5l-3 3v-3H9v5h6l4 4v-4h2c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" />
+                    </svg>
+                    Chat with AI Advisor
+                </button>
+            </div>
+            <div class="hero-trust">
+                <span>Trusted by:</span>
+                <div class="trust-logos">
+                    <span class="trust-logo">EMAAR</span>
+                    <span class="trust-logo">DAMAC</span>
+                    <span class="trust-logo">MERAAS</span>
+                    <span class="trust-logo">SOBHA</span>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-dot"></div>
+        </div>
+    </section>
+
+    <!-- Quick Filters -->
+    <section class="quick-filters" id="quickFilters">
+        <div class="container">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="">All Properties</button>
+                <button class="filter-tab" data-filter="offplan">Off Plan</button>
+                <button class="filter-tab" data-filter="ready">Ready to Move</button>
+            </div>
+            <div class="properties-count" id="propertiesCount">Showing 6 Properties</div>
+        </div>
+    </section>
+
+    <!-- Properties Section -->
+    <section class="properties-section" id="properties">
+        <div class="container">
+            <div class="properties-grid" id="propertiesGrid"></div>
+            <div class="properties-more">
+                <button class="btn btn-outline-dark" id="loadMoreBtn">Load More Properties</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="section testimonials-section" id="testimonials">
+        <div class="container">
+            <div class="section-header-center">
+                <span class="section-tag">TESTIMONIALS</span>
+                <h2 class="section-title">What Our <span class="highlight">Clients</span> Say</h2>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">★★★★★</div>
+                    <p class="testimonial-text">"AIONUS made buying my dream villa in Dubai seamless. Their team
+                        was professional, responsive, and found exactly what I was looking for within my budget."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">JM</div>
+                        <div>
+                            <strong>James Morrison</strong>
+                            <span>Purchased Villa in Emirates Hills</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">★★★★★</div>
+                    <p class="testimonial-text">"Outstanding service from start to finish. The AI advisor helped me
+                        narrow down options quickly, and the team handled all paperwork flawlessly."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">SA</div>
+                        <div>
+                            <strong>Sarah Al-Rashid</strong>
+                            <span>Purchased Penthouse in Dubai Marina</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">★★★★★</div>
+                    <p class="testimonial-text">"As an overseas investor, I needed a team I could trust. AIONUS
+                        exceeded my expectations with their market knowledge and after-sales support."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">RK</div>
+                        <div>
+                            <strong>Rajesh Kumar</strong>
+                            <span>Investor - Multiple Properties</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Company Section -->
+    <section class="section company-section" id="company">
+        <div class="container">
+            <div class="company-grid">
+                <div class="company-content">
+                    <span class="section-tag">ABOUT US</span>
+                    <h2 class="section-title">Why Choose <span class="highlight">AIONUS</span>?</h2>
+                    <p class="section-desc">With over 20 years of experience in luxury real estate, we've helped
+                        thousands of clients find their dream properties across the world's most prestigious locations.
+                    </p>
+
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🏆</div>
+                            <h4>Excellence</h4>
+                            <p>Curated portfolio of premium properties</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🤝</div>
+                            <h4>Trust</h4>
+                            <p>Transparent dealings, no hidden costs</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🎯</div>
+                            <h4>Expertise</h4>
+                            <p>Deep market knowledge & insights</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">⭐</div>
+                            <h4>Service</h4>
+                            <p>Concierge-level client support</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="stats-column">
+                    <div class="stat-card">
+                        <span class="stat-value">20+</span>
+                        <span class="stat-label">Years Experience</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">5000+</span>
+                        <span class="stat-label">Properties Sold</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">$2B+</span>
+                        <span class="stat-label">Sales Volume</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">98%</span>
+                        <span class="stat-label">Client Satisfaction</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partners Section -->
+    <section class="partners-section">
+        <div class="container">
+            <p class="partners-title">Our Trusted Developer Partners</p>
+            <div class="partners-grid">
+                <div class="partner-logo">LODHA</div>
+                <div class="partner-logo">DLF</div>
+                <div class="partner-logo">GODREJ</div>
+                <div class="partner-logo">PRESTIGE</div>
+                <div class="partner-logo">SOBHA</div>
+                <div class="partner-logo">TATA</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sell Section -->
+    <section class="section sell-section" id="sell">
+        <div class="container">
+            <div class="sell-grid">
+                <div class="sell-content">
+                    <span class="section-tag">FOR SELLERS</span>
+                    <h2 class="section-title">List Your Property with <span class="highlight">AIONUS</span></h2>
+                    <p class="section-desc">Maximize your property's value with our premium marketing and global buyer
+                        network.</p>
+
+                    <ul class="benefits-list">
+                        <li>
+                            <span class="benefit-icon">📈</span>
+                            <div>
+                                <h4>Maximum Exposure</h4>
+                                <p>Your property showcased to 50,000+ qualified buyers worldwide</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="benefit-icon">📸</span>
+                            <div>
+                                <h4>Professional Marketing</h4>
+                                <p>4K video tours, drone footage, and premium listing placement</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="benefit-icon">💼</span>
+                            <div>
+                                <h4>Expert Negotiation</h4>
+                                <p>Our seasoned agents ensure you get the best possible price</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sell-form-wrapper">
+                    <h3>Get a Free Valuation</h3>
+                    <form id="sellForm" class="premium-form">
+                        <div class="form-group">
+                            <input type="text" name="name" required placeholder="Full Name">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="email" name="email" required placeholder="Email Address">
+                            </div>
+                            <div class="form-group">
+                                <input type="tel" name="phone" required placeholder="Phone Number">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <select name="propertyType" required>
+                                <option value="">Property Type</option>
+                                <option value="apartment">Apartment</option>
+                                <option value="villa">Villa</option>
+                                <option value="penthouse">Penthouse</option>
+                                <option value="commercial">Commercial</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="location" placeholder="Property Location">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Request Free Valuation</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter-section">
+        <div class="container">
+            <div class="newsletter-content">
+                <div class="newsletter-text">
+                    <h3>Stay Updated</h3>
+                    <p>Get exclusive access to new listings, market insights, and special offers.</p>
+                </div>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Enter your email address" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section class="section blog-section" id="blog">
+        <div class="container">
+            <div class="section-header-center">
+                <span class="section-tag">INSIGHTS</span>
+                <h2 class="section-title">Latest from Our <span class="highlight">Blog</span></h2>
+            </div>
+
+            <div class="blog-grid">
+                <article class="blog-card">
+                    <div class="blog-img">
+                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80"
+                            alt="Luxury Home">
+                    </div>
+                    <div class="blog-body">
+                        <span class="blog-category">Market Trends</span>
+                        <h3>Top 5 Luxury Real Estate Markets in 2025</h3>
+                        <p>Discover which cities are leading the luxury property market this year.</p>
+                        <a href="#" class="blog-link">Read More →</a>
+                    </div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-img">
+                        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80" alt="Villa">
+                    </div>
+                    <div class="blog-body">
+                        <span class="blog-category">Buying Guide</span>
+                        <h3>Off-Plan vs Ready: Making the Right Choice</h3>
+                        <p>Understanding the pros and cons of each investment option.</p>
+                        <a href="#" class="blog-link">Read More →</a>
+                    </div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-img">
+                        <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80"
+                            alt="Interior">
+                    </div>
+                    <div class="blog-body">
+                        <span class="blog-category">Investment</span>
+                        <h3>Why Dubai Remains the Hottest Market</h3>
+                        <p>An analysis of factors driving premium property demand.</p>
+                        <a href="#" class="blog-link">Read More →</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section contact-section" id="contact">
+        <div class="container">
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <span class="section-tag">CONTACT US</span>
+                    <h2 class="section-title">Get in <span class="highlight">Touch</span></h2>
+                    <p class="section-desc">Our team of experts is ready to help you find your perfect property.</p>
+
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <span class="contact-icon">📍</span>
+                            <div>
+                                <strong>Visit Us</strong>
+                                <p>Room 303, Path Solitare, Kalamboli<br>Navi Mumbai 410218, India</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">📞</span>
+                            <div>
+                                <strong>Call Us</strong>
+                                <p>+91 7304356686</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">✉️</span>
+                            <div>
+                                <strong>Email Us</strong>
+                                <p>sahap3254@gmail.com</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="https://t.me/Agent182726_bot" target="_blank" class="btn btn-telegram">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor"
+                                d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                        </svg>
+                        Chat on Telegram
+                    </a>
+                </div>
+
+                <div class="contact-form-wrapper">
+                    <h3>Send us a Message</h3>
+                    <form id="contactForm" class="premium-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="contactName" name="name" required placeholder="Your Name">
+                            </div>
+                            <div class="form-group">
+                                <input type="tel" id="contactPhone" name="phone" required placeholder="Phone Number">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="contactEmail" name="email" required placeholder="Email Address">
+                        </div>
+                        <div class="form-group">
+                            <select id="contactInterest" name="interest">
+                                <option value="">I'm interested in...</option>
+                                <option value="buying">Buying a property</option>
+                                <option value="selling">Selling my property</option>
+                                <option value="investment">Investment opportunities</option>
+                                <option value="other">Other inquiry</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="contactMessage" name="message" rows="4"
+                                placeholder="How can we help you?"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Send Message</button>
+                        <div id="contactFormMessage" class="form-message"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location Section -->
+    <section class="section location-section" id="location">
+        <div class="container">
+            <div class="section-header-center">
+                <span class="section-tag">OUR LOCATIONS</span>
+                <h2 class="section-title">Find Properties in <span class="highlight">India</span></h2>
+                <p class="section-desc">Explore premium properties across India's most sought-after cities</p>
+            </div>
+
+            <div class="location-grid">
+                <div class="location-cards">
+                    <div class="location-card" data-location="mumbai">
+                        <div class="location-card-icon">🏙️</div>
+                        <div class="location-card-content">
+                            <h4>Mumbai</h4>
+                            <p>Financial capital of India</p>
+                            <span class="location-count">4 Properties</span>
+                        </div>
+                    </div>
+                    <div class="location-card" data-location="delhi">
+                        <div class="location-card-icon">🕌</div>
+                        <div class="location-card-content">
+                            <h4>Delhi NCR</h4>
+                            <p>Gurgaon, Noida, Greater Noida</p>
+                            <span class="location-count">3 Properties</span>
+                        </div>
+                    </div>
+                    <div class="location-card" data-location="bangalore">
+                        <div class="location-card-icon">💻</div>
+                        <div class="location-card-content">
+                            <h4>Bangalore</h4>
+                            <p>Silicon Valley of India</p>
+                            <span class="location-count">3 Properties</span>
+                        </div>
+                    </div>
+                    <div class="location-card" data-location="hyderabad">
+                        <div class="location-card-icon">🏛️</div>
+                        <div class="location-card-content">
+                            <h4>Hyderabad</h4>
+                            <p>IT hub & heritage city</p>
+                            <span class="location-count">2 Properties</span>
+                        </div>
+                    </div>
+                    <div class="location-card" data-location="pune">
+                        <div class="location-card-icon">🎓</div>
+                        <div class="location-card-content">
+                            <h4>Pune</h4>
+                            <p>Oxford of the East</p>
+                            <span class="location-count">2 Properties</span>
+                        </div>
+                    </div>
+                    <div class="location-card" data-location="chennai">
+                        <div class="location-card-icon">🌊</div>
+                        <div class="location-card-content">
+                            <h4>Chennai</h4>
+                            <p>Gateway to South India</p>
+                            <span class="location-count">1 Property</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="location-map">
+                    <div id="map" class="map-container">
+                        <!-- Google Maps Embed - India -->
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7773392.454154454!2d73.77139!3d20.5937!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30635ff06b92b791%3A0xd78c4fa1854213a6!2sIndia!5e0!3m2!1sen!2sin!4v1702000000000!5m2!1sen!2sin"
+                            width="100%" height="100%" style="border:0; border-radius: 12px;" allowfullscreen=""
+                            loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="logo footer-logo">
+                        <span class="logo-elite">AIONUS</span>
+                    </a>
+                    <p>Premium real estate solutions for discerning buyers. Off-plan and ready properties with
+                        concierge-level service.</p>
+                    <div class="social-links">
+                        <a href="https://instagram.com/aionus_realestate" target="_blank"
+                            class="social-link social-instagram" title="Instagram">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="currentColor"
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                            </svg>
+                        </a>
+                        <a href="https://facebook.com/aionusrealestate" target="_blank"
+                            class="social-link social-facebook" title="Facebook">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="currentColor"
+                                    d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                            </svg>
+                        </a>
+                        <a href="https://wa.me/971501234567" target="_blank" class="social-link social-whatsapp"
+                            title="WhatsApp">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="currentColor"
+                                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                            </svg>
+                        </a>
+                        <a href="https://youtube.com/@aionusrealestate" target="_blank"
+                            class="social-link social-youtube" title="YouTube">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="currentColor"
+                                    d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                            </svg>
+                        </a>
+                        <a href="https://linkedin.com/company/aionus" target="_blank"
+                            class="social-link social-linkedin" title="LinkedIn">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="currentColor"
+                                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#company">About Us</a></li>
+                        <li><a href="#company">Why Choose Us</a></li>
+                        <li><a href="#testimonials">Testimonials</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Buy</h4>
+                    <ul>
+                        <li><a href="#" data-filter="apartment">Apartments</a></li>
+                        <li><a href="#" data-filter="villa">Villas</a></li>
+                        <li><a href="#" data-filter="penthouse">Penthouses</a></li>
+                        <li><a href="#" data-filter="townhouse">Townhouses</a></li>
+                        <li><a href="#" data-filter="office">Commercial</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Off Plan</h4>
+                    <ul>
+                        <li><a href="#">Dubai Projects</a></li>
+                        <li><a href="#">Abu Dhabi Projects</a></li>
+                        <li><a href="#">New Launches</a></li>
+                        <li><a href="#">Featured</a></li>
+                        <li><a href="#">Payment Plans</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="#">RERA Info</a></li>
+                        <li><a href="#">Sitemap</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 AIONUS. All rights reserved.</p>
+                <p>Licensed Real Estate Broker | DED License: 123456 | RERA ORN: 12345</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AIONUS Admin - Scheduled Site Visits">
+    <title>AIONUS Admin - Site Visits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Admin Visits Page Styles */
+        .admin-visits-container {
+            max-width: 1200px;
+            margin: 100px auto 60px;
+            padding: 0 24px;
+        }
+
+        .admin-visits-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .admin-visits-header {
+            padding: 32px;
+            border-bottom: 1px solid #E5E5E5;
+        }
+
+        .admin-visits-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: #0D0D0D;
+            margin: 0 0 8px 0;
+        }
+
+        .admin-visits-header p {
+            color: #737373;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* Controls Bar */
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 24px 32px;
+            background: #FAFAFA;
+            border-bottom: 1px solid #E5E5E5;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid #E5E5E5;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #C41E3A;
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 1px solid #E5E5E5;
+            background: white;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-btn:hover {
+            border-color: #C41E3A;
+            color: #C41E3A;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #C41E3A 0%, #E31B54 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .export-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Table Styles */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .visits-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .visits-table thead {
+            background: #F8F8F8;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .visits-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #737373;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #E5E5E5;
+            cursor: pointer;
+            transition: color 0.2s;
+            white-space: nowrap;
+        }
+
+        .visits-table th:hover {
+            color: #C41E3A;
+        }
+
+        .visits-table th.sortable::after {
+            content: " ↕";
+            opacity: 0.4;
+        }
+
+        .visits-table th.sort-asc::after {
+            content: " ↑";
+            opacity: 1;
+            color: #C41E3A;
+        }
+
+        .visits-table th.sort-desc::after {
+            content: " ↓";
+            opacity: 1;
+            color: #C41E3A;
+        }
+
+        .visits-table tbody tr {
+            border-bottom: 1px solid #F0F0F0;
+            transition: background 0.2s;
+        }
+
+        .visits-table tbody tr:nth-child(even) {
+            background: #FAFAFA;
+        }
+
+        .visits-table tbody tr:hover {
+            background: #FEF2F2;
+        }
+
+        .visits-table td {
+            padding: 16px 20px;
+            font-size: 0.95rem;
+            color: #262626;
+        }
+
+        .visits-table td .phone {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .visits-table td .message {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #737373;
+            font-size: 0.85rem;
+        }
+
+        .visits-table td .date {
+            font-weight: 500;
+            color: #C41E3A;
+        }
+
+        .visits-table td .time {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #92400E;
+        }
+
+        .visits-table td .created-at {
+            font-size: 0.8rem;
+            color: #9CA3AF;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 24px;
+            color: #737373;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            color: #262626;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: #737373;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E5E5E5;
+            border-top-color: #C41E3A;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            padding: 16px 32px;
+            background: #FEF2F2;
+            border-top: 1px solid #E5E5E5;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .stat-item strong {
+            color: #C41E3A;
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #737373;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #C41E3A;
+        }
+
+        /* Nav Links */
+        .admin-nav {
+            display: flex;
+            gap: 16px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .admin-nav a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .admin-nav a:hover,
+        .admin-nav a.active {
+            background: rgba(255, 215, 0, 0.15);
+            color: #ffd700;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-visits-container {
+                margin-top: 80px;
+                padding: 0 16px;
+            }
+
+            .controls-bar {
+                flex-direction: column;
+                padding: 16px;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .filter-group {
+                flex-wrap: wrap;
+            }
+
+            .visits-table th,
+            .visits-table td {
+                padding: 12px;
+                font-size: 0.85rem;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        /* Enhanced Container Shadow */
+        .admin-visits-card {
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Pagination Controls */
+        .pagination-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            border-top: 1px solid #E5E5E5;
+            background: #FAFAFA;
+        }
+
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #737373;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid #E5E5E5;
+            background: white;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: #C41E3A;
+            color: #C41E3A;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-btn.active {
+            background: #C41E3A;
+            color: white;
+            border-color: #C41E3A;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            padding: 10px 20px;
+            border: 1px solid #E5E5E5;
+            background: white;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dark-mode-toggle:hover {
+            border-color: #333;
+            background: #f0f0f0;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .admin-visits-card {
+            background: #16213e;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .admin-visits-header {
+            border-bottom-color: #2d3748;
+        }
+
+        body.dark-mode .admin-visits-header h1 {
+            color: #ffd700;
+        }
+
+        body.dark-mode .admin-visits-header p {
+            color: #a0aec0;
+        }
+
+        body.dark-mode .controls-bar {
+            background: #1e2a4a;
+            border-bottom-color: #2d3748;
+        }
+
+        body.dark-mode .search-box input {
+            background: #16213e;
+            border-color: #2d3748;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .search-box input:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+        }
+
+        body.dark-mode .filter-btn {
+            background: #16213e;
+            border-color: #2d3748;
+            color: #a0aec0;
+        }
+
+        body.dark-mode .filter-btn:hover {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        body.dark-mode .filter-btn.active {
+            background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+            color: #000;
+        }
+
+        body.dark-mode .visits-table thead {
+            background: #1e2a4a;
+        }
+
+        body.dark-mode .visits-table th {
+            color: #a0aec0;
+            border-bottom-color: #2d3748;
+        }
+
+        body.dark-mode .visits-table th:hover {
+            color: #ffd700;
+        }
+
+        body.dark-mode .visits-table tbody tr {
+            border-bottom-color: #2d3748;
+        }
+
+        body.dark-mode .visits-table tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        body.dark-mode .visits-table tbody tr:hover {
+            background: rgba(255, 215, 0, 0.08);
+        }
+
+        body.dark-mode .visits-table td {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .stats-bar {
+            background: #1e2a4a;
+            border-top-color: #2d3748;
+        }
+
+        body.dark-mode .stat-item strong {
+            color: #ffd700;
+        }
+
+        body.dark-mode .pagination-bar {
+            background: #1e2a4a;
+            border-top-color: #2d3748;
+        }
+
+        body.dark-mode .page-btn {
+            background: #16213e;
+            border-color: #2d3748;
+            color: #a0aec0;
+        }
+
+        body.dark-mode .page-btn:hover:not(:disabled) {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        body.dark-mode .page-btn.active {
+            background: #ffd700;
+            color: #000;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background: #ffd700;
+            color: #000;
+            border-color: #ffd700;
+        }
+
+        body.dark-mode .back-link {
+            color: #a0aec0;
+        }
+
+        body.dark-mode .back-link:hover {
+            color: #ffd700;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Admin Navigation -->
+    <nav class="admin-nav">
+        <a href="/">🏠 Home</a>
+        <a href="/admin.html">📄 Upload Brochures</a>
+        <a href="/admin-visits.html" class="active">📅 Site Visits</a>
+        <a href="/admin-crm.html">👥 CRM Leads</a>
+        <a href="/admin-analytics.html">📊 Analytics</a>
+    </nav>
+
+    <div class="admin-visits-container">
+        <a href="/" class="back-link">← Back to Website</a>
+
+        <div class="admin-visits-card">
+            <div class="admin-visits-header">
+                <h1>📅 Scheduled Site Visits</h1>
+                <p>View and manage all scheduled property visits</p>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-bar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name or phone...">
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">All Visits</button>
+                    <button class="filter-btn" data-filter="today">Today</button>
+                    <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+                    <button class="filter-btn" data-filter="past">Past</button>
+                </div>
+                <button class="export-btn" onclick="exportToCSV()">
+                    📥 Export CSV
+                </button>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()">
+                    <span class="dark-icon">🌙</span> Dark Mode
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrapper">
+                <div id="tableContent">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p>Loading site visits...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-bar" id="paginationBar">
+                <div class="pagination-info">
+                    Showing <strong id="showingStart">0</strong> - <strong id="showingEnd">0</strong> of <strong
+                        id="totalCount">0</strong> entries
+                </div>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="prevBtn" onclick="prevPage()" disabled>← Previous</button>
+                    <span id="pageNumbers"></span>
+                    <button class="page-btn" id="nextBtn" onclick="nextPage()">Next →</button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span>Total:</span>
+                    <strong id="statTotal">0</strong>
+                </div>
+                <div class="stat-item">
+                    <span>Today:</span>
+                    <strong id="statToday">0</strong>
+                </div>
+                <div class="stat-item">
+                    <span>Upcoming:</span>
+                    <strong id="statUpcoming">0</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // ADMIN VISITS DASHBOARD
+        // ========================================
+
+        let allVisits = [];
+        let filteredVisits = [];
+        let currentFilter = 'all';
+        let currentSort = { field: 'visit_date', direction: 'asc' };
+
+        // Pagination
+        let currentPage = 1;
+        const pageSize = 10;
+
+        // Environment config
+        const SUPABASE_URL = window.ENV?.SUPABASE_URL || '';
+        const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || '';
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load dark mode preference
+            if (localStorage.getItem('adminDarkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                updateDarkModeButton();
+            }
+            await loadVisits();
+            setupEventListeners();
+        });
+
+        // Load visits from backend API
+        async function loadVisits() {
+            try {
+                console.log('📅 Loading site visits from API...');
+
+                const response = await fetch('/api/schedule-visit');
+                const json = await response.json();
+
+                if (!json.success) {
+                    throw new Error(json.error || 'Failed to load visits');
+                }
+
+                allVisits = json.data || [];
+                console.log(`✅ Loaded ${allVisits.length} site visits`);
+
+                applyFilters();
+                updateStats();
+            } catch (error) {
+                console.error('❌ Error loading visits:', error);
+                document.getElementById('tableContent').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Failed to Load Data</h3>
+                        <p>${error.message || 'Please check your connection and try again.'}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search
+            document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    applyFilters();
+                });
+            });
+        }
+
+        // Apply filters and search
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const today = new Date().toISOString().split('T')[0];
+
+            filteredVisits = allVisits.filter(visit => {
+                // Search filter
+                const matchesSearch = !searchTerm ||
+                    visit.name?.toLowerCase().includes(searchTerm) ||
+                    visit.phone?.toLowerCase().includes(searchTerm);
+
+                // Date filter
+                let matchesFilter = true;
+                if (currentFilter === 'today') {
+                    matchesFilter = visit.visit_date === today;
+                } else if (currentFilter === 'upcoming') {
+                    matchesFilter = visit.visit_date >= today;
+                } else if (currentFilter === 'past') {
+                    matchesFilter = visit.visit_date < today;
+                }
+
+                return matchesSearch && matchesFilter;
+            });
+
+            // Apply sorting
+            sortVisits();
+            renderTable();
+        }
+
+        // Sort visits
+        function sortVisits() {
+            filteredVisits.sort((a, b) => {
+                let aVal = a[currentSort.field] || '';
+                let bVal = b[currentSort.field] || '';
+
+                if (currentSort.direction === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+        }
+
+        // Handle column sort
+        function handleSort(field) {
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+            applyFilters();
+        }
+
+        // Render table with pagination
+        function renderTable() {
+            const container = document.getElementById('tableContent');
+
+            if (filteredVisits.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <h3>No Site Visits Found</h3>
+                        <p>No site visits scheduled yet or no results match your search.</p>
+                    </div>
+                `;
+                updatePagination(0, 0, 0);
+                return;
+            }
+
+            // Calculate pagination
+            const totalItems = filteredVisits.length;
+            const totalPages = Math.ceil(totalItems / pageSize);
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, totalItems);
+            const pageData = filteredVisits.slice(startIndex, endIndex);
+
+            const getSortClass = (field) => {
+                if (currentSort.field !== field) return 'sortable';
+                return `sortable sort-${currentSort.direction}`;
+            };
+
+            let html = `
+                <table class="visits-table">
+                    <thead>
+                        <tr>
+                            <th class="${getSortClass('name')}" onclick="handleSort('name')">Name</th>
+                            <th class="${getSortClass('phone')}" onclick="handleSort('phone')">Phone</th>
+                            <th class="${getSortClass('visit_date')}" onclick="handleSort('visit_date')">Visit Date</th>
+                            <th class="${getSortClass('visit_time')}" onclick="handleSort('visit_time')">Time</th>
+                            <th>Message</th>
+                            <th class="${getSortClass('created_at')}" onclick="handleSort('created_at')">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            pageData.forEach(visit => {
+                const formattedDate = formatDate(visit.visit_date);
+                const createdAt = formatDateTime(visit.created_at);
+                const message = visit.message || '-';
+
+                html += `
+                    <tr>
+                        <td><strong>${escapeHtml(visit.name)}</strong></td>
+                        <td><span class="phone">${escapeHtml(visit.phone)}</span></td>
+                        <td><span class="date">${formattedDate}</span></td>
+                        <td><span class="time">${escapeHtml(visit.visit_time)}</span></td>
+                        <td><span class="message" title="${escapeHtml(message)}">${escapeHtml(message)}</span></td>
+                        <td><span class="created-at">${createdAt}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+
+            // Update pagination UI
+            updatePagination(startIndex + 1, endIndex, totalItems);
+            updatePaginationButtons(totalPages);
+        }
+
+        // Update pagination info display
+        function updatePagination(start, end, total) {
+            document.getElementById('showingStart').textContent = start || 0;
+            document.getElementById('showingEnd').textContent = end || 0;
+            document.getElementById('totalCount').textContent = total || 0;
+        }
+
+        // Update pagination buttons
+        function updatePaginationButtons(totalPages) {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const pageNumbers = document.getElementById('pageNumbers');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+
+            // Generate page numbers
+            let numbersHtml = '';
+            for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                const pageNum = totalPages <= 5 ? i :
+                    currentPage <= 3 ? i :
+                        currentPage >= totalPages - 2 ? totalPages - 5 + i :
+                            currentPage - 3 + i;
+                if (pageNum > 0 && pageNum <= totalPages) {
+                    numbersHtml += `<button class="page-btn ${pageNum === currentPage ? 'active' : ''}" onclick="goToPage(${pageNum})">${pageNum}</button>`;
+                }
+            }
+            pageNumbers.innerHTML = numbersHtml;
+        }
+
+        // Pagination navigation
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredVisits.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+        }
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('adminDarkMode', isDark);
+            updateDarkModeButton();
+        }
+
+        function updateDarkModeButton() {
+            const btn = document.querySelector('.dark-mode-toggle');
+            if (!btn) return;
+            const isDark = document.body.classList.contains('dark-mode');
+            btn.innerHTML = isDark ? '<span class="dark-icon">☀️</span> Light Mode' : '<span class="dark-icon">🌙</span> Dark Mode';
+        }
+
+        // Update stats
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+
+            document.getElementById('statTotal').textContent = allVisits.length;
+            document.getElementById('statToday').textContent = allVisits.filter(v => v.visit_date === today).length;
+            document.getElementById('statUpcoming').textContent = allVisits.filter(v => v.visit_date >= today).length;
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (filteredVisits.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const headers = ['Name', 'Phone', 'Visit Date', 'Visit Time', 'Message', 'Created At'];
+            const rows = filteredVisits.map(v => [
+                v.name,
+                v.phone,
+                v.visit_date,
+                v.visit_time,
+                v.message || '',
+                v.created_at
+            ]);
+
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(cell => `"${(cell || '').replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `site-visits-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Utility functions
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+    </script>
+</body>
+
+</html>
