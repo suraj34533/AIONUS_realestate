@@ -716,8 +716,13 @@ let awaitingUserReply = false;
 // CHAT PERSISTENCE (localStorage)
 // ========================================
 
-// Save chat state to localStorage
+// Save chat state to localStorage (per-user for logged-in users)
 function saveChatState() {
+    // Only save if user is logged in
+    if (!currentUser) {
+        return; // Don't save for non-logged-in users
+    }
+
     try {
         const chatMessagesEl = document.getElementById('chatMessages');
         const chatState = {
@@ -731,26 +736,42 @@ function saveChatState() {
                 leadId: leadCapture.leadId
             },
             chatHistory: chatHistory,
-            savedAt: Date.now()
+            savedAt: Date.now(),
+            userId: currentUser.id
         };
-        localStorage.setItem('aionus_chat_state', JSON.stringify(chatState));
+        // Use user-specific key for logged-in users
+        const storageKey = `aionus_chat_state_${currentUser.id}`;
+        localStorage.setItem(storageKey, JSON.stringify(chatState));
+        console.log('💾 Chat state saved for user:', currentUser.name);
     } catch (e) {
         console.log('⚠️ Could not save chat state:', e);
     }
 }
 
-// Load chat state from localStorage
+// Load chat state from localStorage (per-user for logged-in users)
 function loadChatState() {
+    // Only load if user is logged in
+    if (!currentUser) {
+        return false;
+    }
+
     try {
-        const saved = localStorage.getItem('aionus_chat_state');
+        // Use user-specific key for logged-in users
+        const storageKey = `aionus_chat_state_${currentUser.id}`;
+        const saved = localStorage.getItem(storageKey);
         if (!saved) return false;
 
         const chatState = JSON.parse(saved);
 
-        // Check if saved state is less than 24 hours old
-        const isRecent = chatState.savedAt && (Date.now() - chatState.savedAt) < 24 * 60 * 60 * 1000;
+        // Verify this belongs to the current user
+        if (chatState.userId !== currentUser.id) {
+            return false;
+        }
+
+        // Check if saved state is less than 7 days old (longer for logged-in users)
+        const isRecent = chatState.savedAt && (Date.now() - chatState.savedAt) < 7 * 24 * 60 * 60 * 1000;
         if (!isRecent) {
-            localStorage.removeItem('aionus_chat_state');
+            localStorage.removeItem(storageKey);
             return false;
         }
 
@@ -775,6 +796,7 @@ function loadChatState() {
             chatMessagesEl.innerHTML = chatState.messages;
             // Re-attach speak button listeners
             attachSpeakButtonListeners();
+            console.log('📂 Chat history restored for user:', currentUser.name);
             return true;
         }
 
@@ -1442,6 +1464,13 @@ function initChat() {
         const message = chatInput.value.trim();
         if (!message) return;
 
+        // REQUIRE LOGIN TO USE CHATBOT
+        if (!currentUser) {
+            addChatMessage('🔐 Please login or register first to chat with me! Click the Login button in the navbar.', 'bot');
+            showAuthSection();
+            return;
+        }
+
         addChatMessage(message, 'user');
         chatInput.value = '';
 
@@ -1465,9 +1494,16 @@ function initChat() {
         if (e.key === 'Enter') sendMessage();
     });
 
-    // Quick action buttons
+    // Quick action buttons (require login)
     document.querySelectorAll('.quick-action-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
+            // REQUIRE LOGIN FOR QUICK ACTIONS
+            if (!currentUser) {
+                addChatMessage('🔐 Please login or register first to ask questions! Click the Login button in the navbar.', 'bot');
+                showAuthSection();
+                return;
+            }
+
             const question = btn.dataset.question;
             if (!question) return;
 
