@@ -13,6 +13,26 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+// ========================================
+// ENVIRONMENT VARIABLE DEBUG (CRITICAL)
+// ========================================
+console.log('========================================');
+console.log('🔧 ENVIRONMENT VARIABLES CHECK:');
+console.log('========================================');
+console.log('TELEGRAM_BOT_TOKEN:', process.env.TELEGRAM_BOT_TOKEN ? `✅ SET (${process.env.TELEGRAM_BOT_TOKEN.length} chars, starts: ${process.env.TELEGRAM_BOT_TOKEN.substring(0, 8)}...)` : '❌ NOT SET');
+console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? `✅ SET (${process.env.GEMINI_API_KEY.length} chars)` : '❌ NOT SET');
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ SET' : '❌ NOT SET');
+console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? '✅ SET' : '❌ NOT SET');
+console.log('========================================');
+
+// Critical warning for Telegram bot
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+    console.error('⚠️ ⚠️ ⚠️  WARNING: TELEGRAM_BOT_TOKEN is NOT SET!');
+    console.error('The Telegram bot WILL NOT WORK without this variable.');
+    console.error('In Railway: Go to Variables tab and add TELEGRAM_BOT_TOKEN');
+    console.error('⚠️ ⚠️ ⚠️');
+}
+
 const app = express();
 const PORT = process.env.PORT || 8080;
 
