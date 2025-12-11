@@ -1818,9 +1818,7 @@ function addLoadingMessage() {
 }
 
 async function getGeminiResponse(userMessage) {
-    if (!GEMINI_API_KEY) {
-        return "AI assistant is not configured. Please add your GEMINI_API_KEY in the .env file to enable AI features.";
-    }
+    // API key is handled by server-side /api/chat proxy
 
     const model = document.getElementById('chatModelSelect')?.value || DEFAULT_MODEL;
 
