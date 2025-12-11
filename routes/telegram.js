@@ -25,6 +25,13 @@ const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
+// DEBUG: Log token status at startup
+console.log('🔧 TELEGRAM CONFIG:', {
+    token_set: !!TELEGRAM_BOT_TOKEN,
+    token_length: TELEGRAM_BOT_TOKEN?.length || 0,
+    token_preview: TELEGRAM_BOT_TOKEN ? `${TELEGRAM_BOT_TOKEN.substring(0, 10)}...` : 'NOT SET'
+});
+
 // Admin chat IDs (comma-separated in .env)
 const TELEGRAM_ADMIN_CHAT_IDS = (process.env.TELEGRAM_ADMIN_CHAT_IDS || '')
     .split(',')
