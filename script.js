@@ -2378,14 +2378,26 @@ async function submitSchedule() {
         return;
     }
 
+    const name = formData.get('name')?.trim();
+    const phone = formData.get('phone')?.trim();
+
+    if (!name) {
+        showNotification('Please enter your name first', 'error');
+        return;
+    }
+
+    if (!phone) {
+        showNotification('Please enter your phone number first', 'error');
+        return;
+    }
+
     try {
         const response = await fetch('/api/schedule-visit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                name: formData.get('name') || 'Guest',
-                phone: formData.get('phone') || '',
-                email: formData.get('email') || '',
+                name: name,
+                phone: phone,
                 date: date,
                 time: time || '10:00',
                 message: `Interested in: ${selectedProperty?.title || 'Property'} - ${formData.get('message') || ''}`
