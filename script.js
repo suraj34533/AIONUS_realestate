@@ -2258,7 +2258,7 @@ function openPropertyModal(propertyId) {
             <div class="modal-hero-overlay"></div>
             <div class="modal-hero-content">
                 <h2>${property.title}</h2>
-                <p>${property.community}, Dubai</p>
+                <p>${property.community}, India</p>
             </div>
         </div>
         <div class="modal-body">
@@ -2303,7 +2303,11 @@ function openPropertyModal(propertyId) {
             
             <h4 class="modal-section-title">Location</h4>
             <div class="modal-map">
-                <p>📍 ${property.community}, Dubai, UAE</p>
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.755!2d72.8777!3d19.0760!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c6306644edc1%3A0x5da4ed8f8d648c69!2sMumbai%2C%20Maharashtra%2C%20India!5e0!3m2!1sen!2sin!4v1702000000000"
+                    width="100%" height="200" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy">
+                </iframe>
+                <p style="margin-top: 10px;">📍 ${property.community}, India</p>
             </div>
             
             <div class="modal-form-wrapper">
@@ -2326,8 +2330,24 @@ function openPropertyModal(propertyId) {
                         <textarea name="message" rows="3" placeholder="I'm interested in this property..."></textarea>
                     </div>
                     <div style="display: flex; gap: 12px;">
-                        <button type="submit" class="btn btn-primary" style="flex: 1;">Enquire Now</button>
-                        <button type="button" class="btn btn-dark" onclick="scheduleCall()" style="flex: 1;">Schedule a Call</button>
+                        <a href="https://t.me/Agent182726_bot?text=Hi! I'm interested in ${encodeURIComponent(property.title)} at ${encodeURIComponent(property.community)}, priced ${formatPrice(property.price)}" 
+                           target="_blank" class="btn btn-primary" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295l.213-3.053 5.56-5.023c.242-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.828.94z"/></svg>
+                            💬 Chat on Telegram
+                        </a>
+                        <button type="button" class="btn btn-dark" onclick="showScheduleModal()" style="flex: 1;">📅 Schedule a Call</button>
+                    </div>
+                    <div id="scheduleSection" style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 12px;">
+                        <h4 style="margin-bottom: 15px;">📅 Pick Date & Time</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="date" id="visitDate" required style="padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                            <div class="form-group">
+                                <input type="time" id="visitTime" value="10:00" required style="padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success" onclick="submitSchedule()" style="width: 100%; margin-top: 10px;">✅ Confirm Schedule</button>
                     </div>
                 </form>
             </div>
@@ -2340,8 +2360,55 @@ function openPropertyModal(propertyId) {
     document.getElementById('modalOverlay').classList.add('active');
 }
 
-function scheduleCall() {
-    showNotification('Our team will call you within 2 hours to schedule a viewing.', 'success');
+function showScheduleModal() {
+    const section = document.getElementById('scheduleSection');
+    if (section) {
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        // Set minimum date to today
+        const dateInput = document.getElementById('visitDate');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+            dateInput.value = today;
+        }
+    }
+}
+
+async function submitSchedule() {
+    const date = document.getElementById('visitDate')?.value;
+    const time = document.getElementById('visitTime')?.value;
+    const form = document.getElementById('enquiryForm');
+    const formData = new FormData(form);
+
+    if (!date) {
+        showNotification('Please select a date', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/schedule-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: formData.get('name') || 'Guest',
+                phone: formData.get('phone') || '',
+                email: formData.get('email') || '',
+                date: date,
+                time: time || '10:00',
+                message: `Interested in: ${selectedProperty?.title || 'Property'} - ${formData.get('message') || ''}`
+            })
+        });
+
+        if (response.ok) {
+            showNotification('✅ Call scheduled! We will contact you soon.', 'success');
+            document.getElementById('scheduleSection').style.display = 'none';
+        } else {
+            showNotification('Failed to schedule. Please try again.', 'error');
+        }
+    } catch (error) {
+        console.error('Schedule error:', error);
+        showNotification('Error scheduling call. Please try again.', 'error');
+    }
 }
 
 // ========================================
@@ -2382,9 +2449,32 @@ async function handleEnquiryForm(e) {
     const data = Object.fromEntries(formData.entries());
 
     console.log('Enquiry form:', data);
-    await simulateApiCall(data);
 
-    showNotification('Enquiry sent! A property specialist will contact you shortly.', 'success');
+    // Save lead to Supabase
+    try {
+        const response = await fetch('/api/create-lead', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: data.name,
+                phone: data.phone,
+                email: data.email,
+                budget: selectedProperty?.price || null,
+                property_interest: selectedProperty?.title || 'General Enquiry',
+                lead_source: 'website_property_modal',
+                message: data.message
+            })
+        });
+
+        if (response.ok) {
+            showNotification('✅ Enquiry sent! A property specialist will contact you shortly.', 'success');
+        } else {
+            showNotification('Enquiry sent! We will contact you soon.', 'success');
+        }
+    } catch (error) {
+        console.error('Lead creation error:', error);
+        showNotification('Enquiry received! We will contact you soon.', 'success');
+    }
 
     document.getElementById('propertyModal').classList.remove('active');
     document.getElementById('modalOverlay').classList.remove('active');
