@@ -404,7 +404,7 @@ Simply apna naam bataiye aur shuru karte hain. 🏠`;
 
 async function getRagContext(query) {
     try {
-        const response = await fetch(`http://localhost:4000/api/rag?query=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/rag?query=${encodeURIComponent(query)}`);
         if (response.ok) {
             const data = await response.json();
             return data.context || '';
@@ -460,11 +460,21 @@ Lodha (Mumbai luxury), DLF (Delhi NCR), Godrej Properties (pan-India), Prestige 
 - ₹1.5-5Cr: Bandra, South Delhi, Koramangala, Banjara Hills
 - ₹5Cr+: Worli, Golf Course Road Gurgaon, Jubilee Hills
 
+## PROPERTY TYPES:
+- **Villa**: Standalone luxury homes with garden, ₹2Cr+ in tier-1 cities
+- **Apartment**: 1/2/3/4 BHK flats, most common choice, ₹30L-5Cr
+- **Penthouse**: Top-floor luxury with terrace, ₹3Cr+
+- **Row House**: Attached homes, ₹1-3Cr
+- **Farmhouse**: Land + house, outskirts, ₹50L-5Cr
+
+When user asks for "villa" or "apartment" etc, GIVE SPECIFIC OPTIONS with city, area, price range and builder!
+
 ## RULES:
 1. Keep responses SHORT for Telegram (2-3 lines)
 2. NEVER mention Dubai or foreign properties
-3. Give specific city and area recommendations based on budget
+3. Give specific city and area recommendations based on budget AND property type
 4. Quote prices in ₹ Lakhs/Crores
+5. ALWAYS provide at least one specific recommendation
 
 Answer in friendly Hinglish:`;
 
@@ -504,7 +514,7 @@ Answer in friendly Hinglish:`;
 
 async function createCRMLead(leadData) {
     try {
-        const response = await fetch('http://localhost:4000/api/crm/create-lead', {
+        const response = await fetch('/api/crm/create-lead', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -534,7 +544,7 @@ async function scheduleSiteVisit(name, phone, dateTime) {
     try {
         const [date, time] = dateTime.split(' ');
 
-        const response = await fetch('http://localhost:4000/api/schedule-visit', {
+        const response = await fetch('/api/schedule-visit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
