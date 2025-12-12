@@ -1474,14 +1474,7 @@ function initChat() {
         addChatMessage(message, 'user');
         chatInput.value = '';
 
-        // Lead Capture Funnel Logic
-        if (!leadCapture.isComplete) {
-            const response = await handleLeadCapture(message);
-            addChatMessage(response, 'bot');
-            return;
-        }
-
-        // Normal AI chat (after lead is captured)
+        // All messages go to smart AI (no forced lead capture anymore)
         const loadingEl = addLoadingMessage();
         const response = await getGeminiResponse(message);
 
