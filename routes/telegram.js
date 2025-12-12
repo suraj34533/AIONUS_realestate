@@ -420,64 +420,78 @@ async function getAIResponse(userMessage, userState, ragContext = '') {
         return "AI assistant is not configured.";
     }
 
-    const systemPrompt = `You are AIONUS DIVA – the SMARTEST, most HELPFUL India Real Estate AI Assistant.
-
-## 🧠 BE SMART - NEVER DUMB!
-- DON'T ask unnecessary questions. GIVE DIRECT ANSWERS.
-- When user says "villa" - IMMEDIATELY suggest villas with prices!
-- When user says a city - IMMEDIATELY recommend properties there!
-- You already KNOW their name (${userState.name || 'Guest'}) and budget (${userState.budget || '₹1Cr'}) - USE THIS INFO!
+    const systemPrompt = `You are AIONUS DIVA – a GENIUS India Real Estate AI Assistant on Telegram.
 
 ## 🚫 CRITICAL: INDIA ONLY
-- You ONLY know Indian real estate. NO DUBAI. NO UAE. NO FOREIGN.
+- You ONLY know Indian real estate. NO DUBAI. NO UAE. NO FOREIGN PROPERTIES.
+- If anyone asks about Dubai, say: "Main sirf India real estate mein specialize karti hoon. India mein amazing properties hain! Kaunsa city - Mumbai, Delhi, Bangalore, Hyderabad, Pune, Chennai ya Kolkata?"
 - ALL PRICES IN ₹ RUPEES (Lakhs and Crores)
 
-## 💬 RESPONSE STYLE:
-- Be CONFIDENT and KNOWLEDGEABLE
-- Give SPECIFIC area + builder + price recommendations
-- Hinglish (Hindi + English)
-- Use emojis 🏠💰✨
-- MAX 4-5 lines per response
+## PERSONALITY:
+- Premium FEMALE Indian voice (warm, confident, sophisticated)
+- Hinglish (60% Hindi + 40% English)
+- Keep responses 3-5 lines for Telegram
+- Use emojis tastefully
+- BE SMART: GIVE DIRECT RECOMMENDATIONS, don't ask unnecessary questions!
+- You KNOW user's name and budget - USE IT!
 
-## USER INFO (USE THIS!):
-- Name: ${userState.name || 'Guest'} 
-- Budget: ${userState.budget || '₹1Cr approx'}
+## CURRENT USER INFO:
+- Name: ${userState.name || 'Guest'}
+- Phone: ${userState.phone || 'Not provided'}
+- Budget: ${userState.budget || 'Not specified'}
 
-${ragContext ? `## PROPERTY DOCUMENTS:\n${ragContext}\n` : ''}
+${ragContext ? `## DOCUMENT CONTEXT:\n${ragContext}\n` : ''}
 
-## 🏠 EXPERT KNOWLEDGE:
+## 🇮🇳 COMPLETE INDIA KNOWLEDGE:
 
-**VILLA OPTIONS:**
-- Mumbai: Alibaug/Lonavala ₹3-20Cr (Hiranandani, Lodha)
-- Bangalore: Whitefield/Sarjapur ₹2-8Cr (Prestige, Brigade)
-- Delhi: Gurgaon/Noida ₹3-15Cr (DLF, Sobha)
-- Hyderabad: Jubilee Hills ₹4-12Cr (My Home, Aparna)
+### CITIES & PRICE RANGES:
+- **Mumbai**: Worli (₹5-50Cr sea-facing), Bandra (₹2-8Cr lifestyle), Powai (₹1-3Cr IT), Thane (₹50L-1.5Cr)
+- **Delhi NCR**: Golf Course Road (₹5Cr+ luxury), Gurgaon sectors (₹80L-3Cr), Noida (₹50L-2Cr), Greater Noida (₹35-80L)
+- **Bangalore**: Koramangala (₹2Cr+ startups), Whitefield (₹70L-2Cr IT), Sarjapur Road (₹60L-1.2Cr growth)
+- **Hyderabad**: Jubilee Hills (₹3Cr+ luxury), HITEC City (₹60L-1.5Cr IT), Gachibowli (₹70L-2Cr)
+- **Chennai**: Anna Nagar (₹1-2Cr), OMR (₹50L-1Cr IT corridor)
+- **Pune**: Koregaon Park (₹1.5Cr+), Hinjewadi (₹50L-1Cr IT), Baner (₹70L-1.5Cr)
+- **Kolkata**: Alipore (₹1.5Cr+), Rajarhat (₹40-80L)
 
-**APARTMENT OPTIONS:**
-- ₹50L-1Cr: Thane, Greater Noida, Whitefield
-- ₹1-2Cr: Powai, Gurgaon, HSR Layout
-- ₹2-5Cr: Bandra, South Delhi, Koramangala
+### TOP BUILDERS:
+Lodha (Mumbai luxury), DLF (Delhi NCR), Godrej Properties (pan-India), Prestige (Bangalore), Sobha (quality), Oberoi Realty (Mumbai premium), Tata Housing (trust), Brigade (Bangalore), Hiranandani (townships)
 
-**TOP BUILDERS:**
-Lodha, DLF, Godrej, Prestige, Sobha, Oberoi, Tata, Brigade, Hiranandani
+### BUDGET CATEGORIES:
+- ₹30-70L: Thane, Navi Mumbai, Greater Noida, Whitefield outskirts
+- ₹70L-1.5Cr: Powai, Gurgaon sectors, HSR Layout, Hinjewadi
+- ₹1.5-5Cr: Bandra, South Delhi, Koramangala, Banjara Hills
+- ₹5Cr+: Worli, Golf Course Road Gurgaon, Jubilee Hills
 
-## ⚠️ CRITICAL RULES:
-1. NEVER ask "which city" or "what type" - GIVE RECOMMENDATIONS DIRECTLY!
-2. If user's budget is known, match properties TO THEIR BUDGET
-3. Always mention: Area + Builder + Price Range
-4. Be helpful, not annoying!
+## PROPERTY TYPES:
+- **Villa**: Standalone luxury homes with garden, ₹2Cr+ in tier-1 cities
+- **Apartment**: 1/2/3/4 BHK flats, most common choice, ₹30L-5Cr
+- **Penthouse**: Top-floor luxury with terrace, ₹3Cr+
+- **Row House**: Attached homes, ₹1-3Cr
+- **Farmhouse**: Land + house, outskirts, ₹50L-5Cr
 
-NOW RESPOND TO: `;
+When user asks for "villa" or "apartment" etc, GIVE SPECIFIC OPTIONS with city, area, price range and builder!
+
+## RULES:
+1. NEVER ask "which city" or "what type" - GIVE DIRECT RECOMMENDATIONS!
+2. When user says "villa" - suggest villas with prices immediately
+3. Give specific city and area recommendations based on budget AND property type
+4. Quote prices in ₹ Lakhs/Crores
+5. ALWAYS provide at least one specific recommendation with builder name
+6. Be helpful and smart, not annoying!
+
+Answer in friendly Hinglish:`;
 
     try {
         const response = await fetch(
-        \`https://generativelanguage.googleapis.com/v1beta/models/\${GEMINI_MODEL}:generateContent?key=\${GEMINI_API_KEY}\`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [
-                        { role: 'user', parts: [{ text: systemPrompt + userMessage }] }
+                        { role: 'user', parts: [{ text: systemPrompt }] },
+                        { role: 'model', parts: [{ text: 'Samajh gaya! Main help karne ke liye ready hoon. 🏠' }] },
+                        { role: 'user', parts: [{ text: userMessage }] }
                     ],
                     generationConfig: { temperature: 0.8, maxOutputTokens: 600 }
                 })
@@ -575,26 +589,26 @@ async function handleLeadCapture(chatId, message, state) {
 
 India mein aapke liye perfect property dhundne mein madad karungi! 🏠 Mumbai, Delhi, Bangalore, Hyderabad, Pune, Chennai, Kolkata - sabhi cities mein!
 
-        Pehle, aapka shubh naam bataiye ? `;
+Pehle, aapka shubh naam bataiye?`;
 
         case 1:
             state.name = sanitizeName(text);
             state.step = 2;
-            return `Bahut achha, ${ state.name } ji! 🙏
+            return `Bahut achha, ${state.name} ji! 🙏
 
 Ab please apna WhatsApp number share karein 📱`;
 
         case 2:
             const phoneClean = text.replace(/[^0-9+]/g, '');
             if (phoneClean.length < 10) {
-                return `${ state.name } ji, yeh phone number sahi nahi lag raha.Please 10 - digit number enter karein 📱`;
+                return `${state.name} ji, yeh phone number sahi nahi lag raha. Please 10-digit number enter karein 📱`;
             }
             state.phone = phoneClean;
             state.step = 3;
             return `Perfect! ✅
 
-Aapka property ke liye budget kya hai ?
-            Jaise : "50 Lakh", "1 Crore", ya "2-3 Crore" 💰`;
+Aapka property ke liye budget kya hai?
+Jaise: "50 Lakh", "1 Crore", ya "2-3 Crore" 💰`;
 
         case 3:
             state.budget = text;
@@ -607,15 +621,15 @@ Aapka property ke liye budget kya hai ?
                 budget: state.budget
             });
 
-            return `🎉 Shukriya ${ state.name } ji!
+            return `🎉 Shukriya ${state.name} ji!
 
-Aapki details hamari team ko share ho gayi hain.Jaldi call aayegi! 📞
+Aapki details hamari team ko share ho gayi hain. Jaldi call aayegi! 📞
 
-Ab main property search mein help kar sakta hoon.Kya dhundh rahe ho ?
+Ab main property search mein help kar sakta hoon. Kya dhundh rahe ho?
 🏠 Villa
 🏢 Apartment
 🌟 Penthouse
-📋 Off - plan project`;
+📋 Off-plan project`;
 
         default:
             return null;
@@ -656,7 +670,7 @@ router.post('/webhook', async (req, res) => {
         const text = message.text.trim();
         const userName = message.from?.first_name || 'User';
 
-        console.log(`📱[CHAT ${ chatId }] From: ${ userName } | Message: ${ text } `);
+        console.log(`📱 [CHAT ${chatId}] From: ${userName} | Message: ${text}`);
 
         // ==========================================
         // STEP 1: Handle commands FIRST
@@ -672,80 +686,80 @@ router.post('/webhook', async (req, res) => {
                 state.isComplete = false;
                 state.waitingForVisitDate = false;
 
-                const reply = `🙏 Namaste ${ userName } !Welcome to AIONUS Real Estate.
+                const reply = `🙏 Namaste ${userName}! Welcome to AIONUS Real Estate.
 
-Main aapki AI property advisor hoon.India ki best properties dhundhne mein aapki madad karungi! 🏠
+Main aapki AI property advisor hoon. India ki best properties dhundhne mein aapki madad karungi! 🏠
 
-        Mumbai, Delhi, Bangalore, Hyderabad, Pune - kisi bhi city mein property chahiye toh batao!
+Mumbai, Delhi, Bangalore, Hyderabad, Pune - kisi bhi city mein property chahiye toh batao!
 
-Shuru karte hain - aapka naam kya hai ? `;
+Shuru karte hain - aapka naam kya hai?`;
                 state.step = 1;
-                console.log(`📤 Sending / start reply to ${ chatId } `);
+                console.log(`📤 Sending /start reply to ${chatId}`);
                 const sent = await sendTelegramMessage(chatId, reply);
                 console.log(`✅ /start reply sent: ${sent}`);
-        return;
-    }
+                return;
+            }
 
             // Handle admin/help commands
             const adminReply = await handleAdminCommands(chatId, text);
-    if (adminReply) {
-        await sendTelegramMessage(chatId, adminReply);
-        return;
-    }
-}
+            if (adminReply) {
+                await sendTelegramMessage(chatId, adminReply);
+                return;
+            }
+        }
 
-// ==========================================
-// STEP 2: Normal conversation flow
-// ==========================================
-const state = getUserState(chatId);
-let reply = '';
+        // ==========================================
+        // STEP 2: Normal conversation flow
+        // ==========================================
+        const state = getUserState(chatId);
+        let reply = '';
 
-// Handle site visit date input
-if (state.waitingForVisitDate) {
-    state.waitingForVisitDate = false;
+        // Handle site visit date input
+        if (state.waitingForVisitDate) {
+            state.waitingForVisitDate = false;
 
-    const dateRegex = /^\d{4}-\d{2}-\d{2}(\s\d{2}:\d{2})?$/;
-    if (dateRegex.test(text)) {
-        const success = await scheduleSiteVisit(state.name || 'Guest', state.phone || 'N/A', text);
-        if (success) {
-            reply = `✅ Site visit scheduled for ${text}!
+            const dateRegex = /^\d{4}-\d{2}-\d{2}(\s\d{2}:\d{2})?$/;
+            if (dateRegex.test(text)) {
+                const success = await scheduleSiteVisit(state.name || 'Guest', state.phone || 'N/A', text);
+                if (success) {
+                    reply = `✅ Site visit scheduled for ${text}!
 
 Hamari team aapse contact karegi. 📞`;
-        } else {
-            reply = `❌ Visit schedule karne mein problem hui. Please dubara try karein.`;
-        }
-    } else {
-        reply = `⚠️ Please date is format mein bhejein: 
+                } else {
+                    reply = `❌ Visit schedule karne mein problem hui. Please dubara try karein.`;
+                }
+            } else {
+                reply = `⚠️ Please date is format mein bhejein: 
 <code>2024-12-15 10:00</code>`;
-    }
-}
-// Handle site visit request
-else if (state.isComplete && isSiteVisitRequest(text)) {
-    state.waitingForVisitDate = true;
-    reply = `📅 Site visit book karna chahte hain? Great!
+            }
+        }
+        // Handle site visit request
+        else if (state.isComplete && isSiteVisitRequest(text)) {
+            state.waitingForVisitDate = true;
+            reply = `📅 Site visit book karna chahte hain? Great!
 
 Please apni preferred date aur time bhejein:
 <code>YYYY-MM-DD HH:MM</code>
 
 Example: <code>2024-12-15 10:00</code>`;
-}
-// Lead capture funnel
-else if (!state.isComplete) {
-    reply = await handleLeadCapture(chatId, text, state);
-}
-// AI-powered response with RAG
-else {
-    const ragContext = await getRagContext(text);
-    reply = await getAIResponse(text, state, ragContext);
-}
+        }
+        // Lead capture funnel
+        else if (!state.isComplete) {
+            reply = await handleLeadCapture(chatId, text, state);
+        }
+        // AI-powered response with RAG
+        else {
+            const ragContext = await getRagContext(text);
+            reply = await getAIResponse(text, state, ragContext);
+        }
 
-if (reply) {
-    await sendTelegramMessage(chatId, reply);
-}
+        if (reply) {
+            await sendTelegramMessage(chatId, reply);
+        }
 
     } catch (error) {
-    console.error('❌ Telegram webhook error:', error);
-}
+        console.error('❌ Telegram webhook error:', error);
+    }
 });
 
 // ========================================
