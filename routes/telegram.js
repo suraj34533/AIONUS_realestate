@@ -41,6 +41,7 @@ const TELEGRAM_ADMIN_CHAT_IDS = (process.env.TELEGRAM_ADMIN_CHAT_IDS || '')
 // Supabase config
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
 // ========================================
 // ADMIN CHECK
@@ -57,12 +58,12 @@ const userStates = new Map();
 function getUserState(chatId) {
     if (!userStates.has(chatId)) {
         userStates.set(chatId, {
-            step: 0,
             name: null,
             phone: null,
             budget: null,
             waitingForVisitDate: false,
-            isComplete: false
+            waitingForLeadConfirm: false,
+            pendingLead: null
         });
     }
     return userStates.get(chatId);
@@ -512,6 +513,152 @@ Answer in friendly Hinglish:`;
 }
 
 // ========================================
+// CONVERSATION LOGGING
+// ========================================
+
+async function logConversation(chatId, platform, role, message) {
+    try {
+        if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+            console.log('⚠️ Supabase not configured for conversation logging');
+            return;
+        }
+
+        await fetch(`${SUPABASE_URL}/rest/v1/conversations`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_SERVICE_KEY,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+                telegram_chat_id: chatId.toString(),
+                platform: platform,
+                role: role,
+                message: message.substring(0, 5000) // Limit message length
+            })
+        });
+        console.log(`📝 Logged ${role} message to conversations`);
+    } catch (error) {
+        console.error('❌ Conversation logging error:', error.message);
+    }
+}
+
+// ========================================
+// SMART AI RESPONSE (with lead extraction)
+// ========================================
+
+async function getSmartAIResponse(userMessage, userState, ragContext, chatId) {
+    if (!GEMINI_API_KEY) {
+        return "AI assistant is not configured.";
+    }
+
+    // Check if user wants to explore properties
+    const exploreKeywords = ['explore properties', 'find property', 'search properties', 'property dhundh', 'property chahiye', 'ghar chahiye', 'flat chahiye', 'villa chahiye', 'apartment chahiye'];
+    const wantsToExplore = exploreKeywords.some(k => userMessage.toLowerCase().includes(k));
+
+    const systemPrompt = `You are AIONUS DIVA – the SMARTEST India Real Estate AI on Telegram.
+
+## USER INFO:
+- Name: ${userState.name || 'User'}
+- Phone: ${userState.phone || 'Not provided'}
+- Budget: ${userState.budget || 'Not specified'}
+
+## RULES:
+1. Be conversational and helpful
+2. Keep responses 3-5 lines
+3. Use Hinglish (Hindi+English)
+4. ALL prices in ₹ Rupees only
+5. INDIA ONLY - no Dubai/UAE
+
+${wantsToExplore ? `
+## IMPORTANT: User wants to explore properties!
+If you don't have their name, phone, or budget yet, ASK them casually:
+"Property explore karne ke liye mujhe aapka naam, phone number aur budget chahiye. Please share karein!"
+
+If they provide details in message, EXTRACT them and confirm:
+"Let me confirm - Naam: [name], Phone: [phone], Budget: [budget]. Is this correct?"
+` : ''}
+
+${ragContext ? `## CONTEXT:\n${ragContext}\n` : ''}
+
+## PROPERTY KNOWLEDGE:
+- Mumbai: Worli (₹5-50Cr), Bandra (₹2-8Cr), Powai (₹1-3Cr)
+- Delhi NCR: Gurgaon (₹80L-3Cr), Noida (₹50L-2Cr)
+- Bangalore: Koramangala (₹2Cr+), Whitefield (₹70L-2Cr)
+
+Respond naturally:`;
+
+    try {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [
+                        { role: 'user', parts: [{ text: systemPrompt + '\n\nUser: ' + userMessage }] }
+                    ],
+                    generationConfig: { temperature: 0.8, maxOutputTokens: 600 }
+                })
+            }
+        );
+
+        if (!response.ok) {
+            console.error('Gemini API error');
+            return "Kuch technical issue hai. Please thodi der baad try karein.";
+        }
+
+        const data = await response.json();
+        const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Main samajh nahi paya.";
+
+        // Try to extract lead info from conversation
+        if (wantsToExplore) {
+            const extractedLead = extractLeadInfo(userMessage);
+            if (extractedLead.name && extractedLead.phone) {
+                userState.pendingLead = extractedLead;
+                userState.waitingForLeadConfirm = true;
+                return `📋 Let me confirm your details:
+
+👤 Name: ${extractedLead.name}
+📱 Phone: ${extractedLead.phone}
+💰 Budget: ${extractedLead.budget || 'Not mentioned'}
+
+Is this correct? (Reply: Yes/Haan)`;
+            }
+        }
+
+        return aiResponse;
+    } catch (error) {
+        console.error('AI error:', error);
+        return "Technical issue. Please try again.";
+    }
+}
+
+// Extract lead info from natural text
+function extractLeadInfo(text) {
+    const phoneMatch = text.match(/(\+91|91)?[\s-]?[6-9]\d{9}/);
+    const budgetMatch = text.match(/(\d+[\s]*(lakh|lac|l|crore|cr|k))/i);
+
+    // Simple name extraction (first capitalized word that's not a keyword)
+    const words = text.split(/[\s,]+/);
+    let name = null;
+    const skipWords = ['hi', 'hello', 'my', 'name', 'is', 'i', 'am', 'mera', 'naam', 'hai', 'phone', 'number', 'budget'];
+    for (const word of words) {
+        if (word.length > 2 && /^[A-Z]/.test(word) && !skipWords.includes(word.toLowerCase())) {
+            name = word;
+            break;
+        }
+    }
+
+    return {
+        name: name,
+        phone: phoneMatch ? phoneMatch[0].replace(/[\s-]/g, '') : null,
+        budget: budgetMatch ? budgetMatch[0] : null
+    };
+}
+
+// ========================================
 // CRM INTEGRATION
 // ========================================
 
@@ -679,24 +826,21 @@ router.post('/webhook', async (req, res) => {
             // Handle /start separately (resets user state)
             if (text === '/start') {
                 const state = getUserState(chatId);
-                state.step = 0;
-                state.name = null;
-                state.phone = null;
-                state.budget = null;
-                state.isComplete = false;
+                state.name = userName; // Use Telegram username
                 state.waitingForVisitDate = false;
+                state.waitingForLeadConfirm = false;
 
                 const reply = `🙏 Namaste ${userName}! Welcome to AIONUS Real Estate.
 
-Main aapki AI property advisor hoon. India ki best properties dhundhne mein aapki madad karungi! 🏠
+Main aapki AI property advisor hoon 🏠
 
-Mumbai, Delhi, Bangalore, Hyderabad, Pune - kisi bhi city mein property chahiye toh batao!
+India mein luxury properties dhundhne mein aapki madad karungi - Mumbai, Delhi, Bangalore, Hyderabad, Pune!
 
-Shuru karte hain - aapka naam kya hai?`;
-                state.step = 1;
-                console.log(`📤 Sending /start reply to ${chatId}`);
-                const sent = await sendTelegramMessage(chatId, reply);
-                console.log(`✅ /start reply sent: ${sent}`);
+Kaise madad kar sakti hoon aaj? 😊`;
+
+                // Log conversation
+                await logConversation(chatId, 'telegram', 'assistant', reply);
+                await sendTelegramMessage(chatId, reply);
                 return;
             }
 
@@ -720,7 +864,7 @@ Shuru karte hain - aapka naam kya hai?`;
 
             const dateRegex = /^\d{4}-\d{2}-\d{2}(\s\d{2}:\d{2})?$/;
             if (dateRegex.test(text)) {
-                const success = await scheduleSiteVisit(state.name || 'Guest', state.phone || 'N/A', text);
+                const success = await scheduleSiteVisit(state.name || userName, state.phone || 'N/A', text);
                 if (success) {
                     reply = `✅ Site visit scheduled for ${text}!
 
@@ -733,8 +877,25 @@ Hamari team aapse contact karegi. 📞`;
 <code>2024-12-15 10:00</code>`;
             }
         }
+        // Handle lead confirmation
+        else if (state.waitingForLeadConfirm && state.pendingLead) {
+            const confirmWords = ['yes', 'haan', 'ha', 'right', 'correct', 'sahi', 'theek'];
+            if (confirmWords.some(w => text.toLowerCase().includes(w))) {
+                // Save lead to database
+                await createCRMLead(state.pendingLead);
+                state.waitingForLeadConfirm = false;
+                state.pendingLead = null;
+                reply = `🎉 Congratulations! Aapki details save ho gayi hain!
+
+Hamari team jaldi aapse contact karegi. 📞`;
+            } else {
+                state.waitingForLeadConfirm = false;
+                state.pendingLead = null;
+                reply = `Koi baat nahi! Agar details galat hain toh dubara bataiye. 😊`;
+            }
+        }
         // Handle site visit request
-        else if (state.isComplete && isSiteVisitRequest(text)) {
+        else if (isSiteVisitRequest(text)) {
             state.waitingForVisitDate = true;
             reply = `📅 Site visit book karna chahte hain? Great!
 
@@ -743,14 +904,16 @@ Please apni preferred date aur time bhejein:
 
 Example: <code>2024-12-15 10:00</code>`;
         }
-        // Lead capture funnel
-        else if (!state.isComplete) {
-            reply = await handleLeadCapture(chatId, text, state);
-        }
-        // AI-powered response with RAG
+        // Smart AI response for everything else
         else {
+            // Log user message
+            await logConversation(chatId, 'telegram', 'user', text);
+
             const ragContext = await getRagContext(text);
-            reply = await getAIResponse(text, state, ragContext);
+            reply = await getSmartAIResponse(text, state, ragContext, chatId);
+
+            // Log bot response
+            await logConversation(chatId, 'telegram', 'assistant', reply);
         }
 
         if (reply) {
