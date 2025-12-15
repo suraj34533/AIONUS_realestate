@@ -829,13 +829,11 @@ function clearChatState() {
         // Check if user is logged in and use their name
         const userName = currentUser?.name || null;
         if (userName) {
-            leadCapture.name = userName;
-            leadCapture.step = 2; // Skip to phone question
             chatMessagesEl.innerHTML = `
                 <div class="message bot">
                     <div class="message-bubble">
-                        🙏 Namaste ${userName} ji! Welcome back! Maine aapko yaad rakha hai. 😊
-                        Kya main aapki property search mein madad kar sakti hoon?
+                        🙏 Namaste ${userName} ji! Welcome back! 😊
+                        Kaise madad kar sakti hoon aaj?
                     </div>
                     <button class="speak-btn" title="Listen to this message">🔊</button>
                 </div>
@@ -844,8 +842,8 @@ function clearChatState() {
             chatMessagesEl.innerHTML = `
                 <div class="message bot">
                     <div class="message-bubble">
-                        🙏 Namaste! Main aapki AIONUS property advisor hoon. Aapke liye perfect ghar dhundne mein madad
-                        karungi. Pehle, aapka shubh naam bataiye? 😊
+                        🙏 Namaste! Main aapki AIONUS property advisor hoon. 🏠
+                        Kaise madad kar sakti hoon aaj?
                     </div>
                     <button class="speak-btn" title="Listen to this message">🔊</button>
                 </div>
@@ -865,6 +863,154 @@ function attachSpeakButtonListeners() {
             speakHindiFast(messageText);
         });
     });
+}
+
+// Show chat history for current user
+function showChatHistory() {
+    if (!currentUser) {
+        showNotification('Please login to view chat history', 'error');
+        return;
+    }
+
+    // Get all saved conversations for this user
+    const userId = currentUser.id || currentUser.email;
+    const historyKey = `aionus_chat_history_${userId}`;
+    const savedHistory = localStorage.getItem(historyKey);
+
+    let conversations = [];
+    try {
+        conversations = savedHistory ? JSON.parse(savedHistory) : [];
+    } catch (e) {
+        conversations = [];
+    }
+
+    // Create modal
+    const existingModal = document.getElementById('historyModal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'historyModal';
+    modal.className = 'history-modal';
+    modal.innerHTML = `
+        <div class="history-modal-content">
+            <div class="history-modal-header">
+                <h3>📜 Chat History</h3>
+                <button class="history-close-btn">&times;</button>
+            </div>
+            <div class="history-list">
+                ${conversations.length === 0 ?
+            '<p style="text-align: center; color: #888; padding: 20px;">No saved conversations yet</p>' :
+            conversations.map((conv, index) => `
+                        <div class="history-item" data-index="${index}">
+                            <div class="history-item-date">${new Date(conv.timestamp).toLocaleDateString()} ${new Date(conv.timestamp).toLocaleTimeString()}</div>
+                            <div class="history-item-preview">${conv.messages?.[0]?.text?.substring(0, 50) || 'Conversation'}...</div>
+                        </div>
+                    `).join('')
+        }
+            </div>
+            <button class="clear-history-btn" ${conversations.length === 0 ? 'disabled' : ''}>🗑️ Clear History</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Add styles if not already added
+    if (!document.getElementById('historyModalStyles')) {
+        const styles = document.createElement('style');
+        styles.id = 'historyModalStyles';
+        styles.textContent = `
+            .history-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+            .history-modal-content { background: white; border-radius: 16px; width: 90%; max-width: 400px; max-height: 70vh; overflow: hidden; display: flex; flex-direction: column; }
+            .history-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #eee; }
+            .history-modal-header h3 { margin: 0; }
+            .history-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
+            .history-list { flex: 1; overflow-y: auto; padding: 10px; }
+            .history-item { padding: 12px; margin: 8px 0; background: #f5f5f5; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
+            .history-item:hover { background: #e8e8e8; }
+            .history-item-date { font-size: 12px; color: #888; margin-bottom: 4px; }
+            .history-item-preview { font-size: 14px; color: #333; }
+            .clear-history-btn { margin: 15px; padding: 10px; background: #ff4444; color: white; border: none; border-radius: 8px; cursor: pointer; }
+            .clear-history-btn:disabled { background: #ccc; cursor: not-allowed; }
+            .history-btn { background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.7; transition: opacity 0.2s; }
+            .history-btn:hover { opacity: 1; }
+        `;
+        document.head.appendChild(styles);
+    }
+
+    // Close modal
+    modal.querySelector('.history-close-btn').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    // Load conversation on click
+    modal.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const index = parseInt(item.dataset.index);
+            loadConversation(conversations[index]);
+            modal.remove();
+        });
+    });
+
+    // Clear history
+    modal.querySelector('.clear-history-btn').addEventListener('click', () => {
+        if (confirm('Clear all chat history?')) {
+            localStorage.removeItem(historyKey);
+            modal.remove();
+            showNotification('History cleared', 'success');
+        }
+    });
+}
+
+// Load a saved conversation
+function loadConversation(conversation) {
+    if (!conversation?.messages) return;
+
+    const chatMessagesEl = document.getElementById('chatMessages');
+    if (!chatMessagesEl) return;
+
+    chatMessagesEl.innerHTML = conversation.messages.map(msg => `
+        <div class="message ${msg.role}">
+            <div class="message-bubble">${msg.text}</div>
+            ${msg.role === 'bot' ? '<button class="speak-btn" title="Listen">🔊</button>' : ''}
+        </div>
+    `).join('');
+
+    attachSpeakButtonListeners();
+    showNotification('Conversation restored', 'success');
+}
+
+// Save current conversation to history
+function saveConversationToHistory() {
+    if (!currentUser) return;
+
+    const chatMessagesEl = document.getElementById('chatMessages');
+    if (!chatMessagesEl) return;
+
+    const messages = Array.from(chatMessagesEl.querySelectorAll('.message')).map(msg => ({
+        role: msg.classList.contains('bot') ? 'bot' : 'user',
+        text: msg.querySelector('.message-bubble')?.textContent?.trim() || ''
+    })).filter(m => m.text);
+
+    if (messages.length < 2) return; // Don't save if just greeting
+
+    const userId = currentUser.id || currentUser.email;
+    const historyKey = `aionus_chat_history_${userId}`;
+
+    let history = [];
+    try {
+        history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+    } catch (e) {
+        history = [];
+    }
+
+    // Add new conversation
+    history.unshift({
+        timestamp: new Date().toISOString(),
+        messages: messages
+    });
+
+    // Keep only last 10 conversations
+    history = history.slice(0, 10);
+
+    localStorage.setItem(historyKey, JSON.stringify(history));
 }
 
 // ========================================
@@ -1418,19 +1564,16 @@ function initChat() {
     // Load saved chat state from localStorage
     const hasRestoredChat = loadChatState();
 
-    // If no saved chat AND user is logged in, prefill their name
+    // If no saved chat AND user is logged in, show personalized greeting
     if (!hasRestoredChat && currentUser?.name) {
-        leadCapture.name = currentUser.name;
-        leadCapture.step = 2; // Skip to phone if we have their name
-
         // Update welcome message for logged-in user
         const chatMessagesEl = document.getElementById('chatMessages');
         if (chatMessagesEl) {
             chatMessagesEl.innerHTML = `
                 <div class="message bot">
                     <div class="message-bubble">
-                        🙏 Namaste ${currentUser.name} ji! Main aapki AIONUS property advisor hoon. 😊
-                        Aapke liye perfect property dhundne mein madad karungi. Kya search kar rahe ho?
+                        🙏 Namaste ${currentUser.name} ji! Welcome! 😊
+                        Kaise madad kar sakti hoon aaj?
                     </div>
                     <button class="speak-btn" title="Listen to this message">🔊</button>
                 </div>
@@ -1439,6 +1582,12 @@ function initChat() {
         }
     }
 
+    // History button handler
+    const historyBtn = document.getElementById('chatHistoryBtn');
+    historyBtn?.addEventListener('click', () => {
+        showChatHistory();
+    });
+
     const openChat = () => {
         chatPanel.classList.add('active');
         chatOverlay.classList.add('active');
@@ -1446,6 +1595,7 @@ function initChat() {
     };
 
     const closeChat = () => {
+        saveConversationToHistory(); // Save conversation before closing
         chatPanel.classList.remove('active');
         chatOverlay.classList.remove('active');
     };
