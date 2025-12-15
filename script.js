@@ -1200,7 +1200,7 @@ async function convertHinglishToHindi(text) {
                     }],
                     generationConfig: {
                         temperature: 0.3,
-                        maxOutputTokens: 500
+                        maxOutputTokens: 1000
                     }
                 })
             }
@@ -1607,6 +1607,7 @@ function initChat() {
 
     // New Chat button handler
     newChatBtn?.addEventListener('click', () => {
+        saveConversationToHistory(); // Save current conversation first
         clearChatState();
     });
 
